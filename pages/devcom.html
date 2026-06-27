@@ -1,0 +1,1408 @@
+<!-- ═══════════════════════════════════════════════════════════════
+     Flame Finance — pages/devcom.html
+     Developer & Komunitas — Hub eksklusif komunitas & resource dev
+     ═══════════════════════════════════════════════════════════════ -->
+
+<style>
+/* ══════════════════════════════════════════════
+   DEVCOM PAGE — COMPLETE REDESIGN
+══════════════════════════════════════════════ */
+.devcom-page {
+  padding: 20px 24px 60px;
+  max-width: 1100px;
+  margin: 0 auto;
+  font-family: var(--font-sans);
+  min-height: 100%;
+}
+
+/* ══ HERO WITH FOREX CHART ══ */
+.devcom-hero {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  background: linear-gradient(135deg, #080d14 0%, #0d1520 50%, #0a1018 100%);
+  border: 1px solid rgba(77,171,247,0.15);
+  min-height: 220px;
+}
+
+.devcom-hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 80% at 100% 50%, rgba(77,171,247,0.06) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 60% at 0% 30%, rgba(184,146,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 40% at 50% 100%, rgba(0,208,132,0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Forex Chart Canvas */
+#devcom-forex-canvas {
+  position: absolute;
+  right: 0; top: 0; bottom: 0;
+  width: 55%;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.devcom-hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 36px 36px 32px;
+  max-width: 480px;
+}
+
+.devcom-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding: 4px 10px;
+  background: rgba(77,171,247,0.08);
+  border: 1px solid rgba(77,171,247,0.18);
+  border-radius: 999px;
+}
+
+.devcom-hero-eyebrow .blink-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  animation: blink-fast 1.2s ease-in-out infinite;
+}
+
+@keyframes blink-fast {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.3; transform:scale(0.7); }
+}
+
+.devcom-hero-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+.devcom-hero-title .grad-text {
+  background: linear-gradient(135deg, #4dabf7, #b892ff, #00d084);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% 200%;
+  animation: grad-shift 4s ease infinite;
+}
+
+@keyframes grad-shift {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.devcom-hero-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: 22px;
+  max-width: 400px;
+}
+
+.devcom-hero-stats {
+  display: flex;
+  gap: 0;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.hero-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 8px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+.hero-stat:last-child { border-right: none; }
+
+.hero-stat-val {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.hero-stat-lbl {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ══ SECTION HEADER ══ */
+.devcom-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  margin-top: 36px;
+}
+.devcom-section-head:first-of-type { margin-top: 0; }
+
+.section-icon-wrap {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.section-icon-wrap.green  { background: rgba(0,208,132,0.1); border: 1px solid rgba(0,208,132,0.18); }
+.section-icon-wrap.blue   { background: rgba(77,171,247,0.1); border: 1px solid rgba(77,171,247,0.18); }
+.section-icon-wrap.purple { background: rgba(184,146,255,0.1); border: 1px solid rgba(184,146,255,0.18); }
+.section-icon-wrap.gold   { background: rgba(255,215,0,0.08); border: 1px solid rgba(255,215,0,0.16); }
+.section-icon-wrap.orange { background: rgba(255,159,67,0.1); border: 1px solid rgba(255,159,67,0.18); }
+
+.devcom-section-title {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.devcom-section-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--border-color) 0%, transparent 100%);
+}
+
+/* ══ GRIDS ══ */
+.devcom-grid { display: grid; gap: 14px; }
+.devcom-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.devcom-grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+/* ══ COMMUNITY CARDS ══ */
+.com-card {
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-decoration: none !important;
+}
+
+.com-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.com-card.wa::before   { background: linear-gradient(90deg, #25D366, #128C7E); }
+.com-card.tele::before { background: linear-gradient(90deg, #2AABEE, #229ED9); }
+.com-card.yt::before   { background: linear-gradient(90deg, #FF0000, #cc0000); }
+.com-card.disc::before { background: linear-gradient(90deg, #7289DA, #5865F2); }
+.com-card.ig::before   { background: linear-gradient(90deg, #E1306C, #833AB4); }
+
+.com-card:hover { border-color: var(--border-bright); transform: translateY(-2px); box-shadow: var(--shadow); }
+.com-card:hover::before { opacity: 1; }
+
+.com-card-head { display: flex; align-items: center; gap: 12px; }
+
+.com-card-logo {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.com-card-logo.wa   { background: linear-gradient(135deg, #25D366, #128C7E); }
+.com-card-logo.tele { background: linear-gradient(135deg, #2AABEE, #229ED9); }
+.com-card-logo.yt   { background: linear-gradient(135deg, #FF0000, #cc0000); }
+.com-card-logo.disc { background: linear-gradient(135deg, #7289DA, #5865F2); }
+.com-card-logo.ig   { background: linear-gradient(135deg, #f77737, #E1306C, #833AB4); }
+
+.com-card-meta { flex: 1; min-width: 0; }
+.com-card-name { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
+.com-card-type { font-size: 0.68rem; color: var(--text-muted); margin-top: 1px; font-family: var(--font-mono); }
+
+.com-card-badge {
+  padding: 3px 8px; border-radius: 999px;
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  flex-shrink: 0;
+}
+.com-card-badge.live { background: rgba(0,208,132,0.12); color: var(--accent-green); border: 1px solid rgba(0,208,132,0.2); }
+.com-card-badge.open { background: rgba(77,171,247,0.1); color: var(--accent-blue); border: 1px solid rgba(77,171,247,0.18); }
+
+.com-card-desc { font-size: 0.77rem; color: var(--text-secondary); line-height: 1.55; }
+
+.com-card-footer {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+
+.com-card-members {
+  font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted);
+  display: flex; align-items: center; gap: 4px;
+}
+
+.com-card-action {
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 0.68rem; font-weight: 600;
+  border: 1px solid var(--border-color); background: var(--bg-hover); color: var(--text-secondary);
+  display: flex; align-items: center; gap: 5px; transition: all 0.15s;
+}
+.com-card:hover .com-card-action {
+  background: rgba(77,171,247,0.1);
+  border-color: rgba(77,171,247,0.25);
+  color: var(--accent-blue);
+}
+
+/* ══════════════════════════════════════════
+   MUSIC PLAYER — EPIC REDESIGN
+══════════════════════════════════════════ */
+.music-player-wrap {
+  border-radius: 20px;
+  border: 1px solid rgba(184,146,255,0.2);
+  background: linear-gradient(135deg, #0d0a1a 0%, #0a0d1a 50%, #0a1214 100%);
+  overflow: hidden;
+  position: relative;
+}
+
+.music-player-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse 50% 60% at 20% 0%, rgba(184,146,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 80% 100%, rgba(77,171,247,0.05) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Top area: disc + visualizer + info */
+.music-main-area {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 24px 16px;
+}
+
+/* Rotating vinyl disc */
+.music-disc-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.music-disc {
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #1a1a2e 0deg, #16213e 60deg, #0f0c29 120deg,
+    #1a001a 180deg, #001233 240deg, #1a0000 300deg, #1a1a2e 360deg
+  );
+  border: 3px solid rgba(184,146,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  box-shadow: 0 0 30px rgba(184,146,255,0.15), inset 0 0 20px rgba(0,0,0,0.5);
+  transition: box-shadow 0.3s;
+}
+
+.music-disc.spinning {
+  animation: disc-spin 3s linear infinite;
+  box-shadow: 0 0 40px rgba(184,146,255,0.3), 0 0 80px rgba(77,171,247,0.1), inset 0 0 20px rgba(0,0,0,0.5);
+}
+
+@keyframes disc-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.music-disc-inner {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: #0d0a14;
+  border: 2px solid rgba(184,146,255,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  z-index: 1;
+  position: relative;
+}
+
+.disc-ring {
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* Playing needle */
+.music-disc-needle {
+  position: absolute;
+  top: -8px; right: -12px;
+  width: 28px; height: 48px;
+  transform-origin: top center;
+  transition: transform 0.5s ease;
+}
+.music-disc-needle.off-disc { transform: rotate(-25deg); }
+.music-disc-needle.on-disc  { transform: rotate(0deg); }
+
+/* Visualizer bars */
+.music-visualizer {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 48px;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+
+.viz-bar {
+  width: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to top, var(--accent-purple), var(--accent-blue));
+  transform-origin: bottom;
+  animation: viz-idle 1.6s ease-in-out infinite;
+  min-height: 4px;
+  max-height: 100%;
+  transition: opacity 0.3s;
+}
+
+.viz-bar:nth-child(1) { animation-delay: 0s; }
+.viz-bar:nth-child(2) { animation-delay: 0.1s; }
+.viz-bar:nth-child(3) { animation-delay: 0.2s; }
+.viz-bar:nth-child(4) { animation-delay: 0.15s; }
+.viz-bar:nth-child(5) { animation-delay: 0.05s; }
+.viz-bar:nth-child(6) { animation-delay: 0.25s; }
+.viz-bar:nth-child(7) { animation-delay: 0.1s; }
+.viz-bar:nth-child(8) { animation-delay: 0.3s; }
+.viz-bar:nth-child(9) { animation-delay: 0.08s; }
+.viz-bar:nth-child(10){ animation-delay: 0.18s; }
+.viz-bar:nth-child(11){ animation-delay: 0.04s; }
+.viz-bar:nth-child(12){ animation-delay: 0.22s; }
+
+@keyframes viz-idle {
+  0%,100% { height: 6px; }
+  50% { height: 10px; }
+}
+
+@keyframes viz-play {
+  0%,100% { height: var(--h, 20px); }
+  50% { height: calc(var(--h, 20px) * 0.3); }
+}
+
+.music-visualizer.playing .viz-bar {
+  animation: viz-play 0.6s ease-in-out infinite alternate;
+}
+.music-visualizer.playing .viz-bar:nth-child(1)  { --h: 22px; animation-duration: 0.55s; }
+.music-visualizer.playing .viz-bar:nth-child(2)  { --h: 38px; animation-duration: 0.7s; }
+.music-visualizer.playing .viz-bar:nth-child(3)  { --h: 28px; animation-duration: 0.45s; }
+.music-visualizer.playing .viz-bar:nth-child(4)  { --h: 45px; animation-duration: 0.8s; }
+.music-visualizer.playing .viz-bar:nth-child(5)  { --h: 30px; animation-duration: 0.5s; }
+.music-visualizer.playing .viz-bar:nth-child(6)  { --h: 42px; animation-duration: 0.65s; }
+.music-visualizer.playing .viz-bar:nth-child(7)  { --h: 24px; animation-duration: 0.75s; }
+.music-visualizer.playing .viz-bar:nth-child(8)  { --h: 40px; animation-duration: 0.55s; }
+.music-visualizer.playing .viz-bar:nth-child(9)  { --h: 32px; animation-duration: 0.85s; }
+.music-visualizer.playing .viz-bar:nth-child(10) { --h: 44px; animation-duration: 0.6s; }
+.music-visualizer.playing .viz-bar:nth-child(11) { --h: 26px; animation-duration: 0.72s; }
+.music-visualizer.playing .viz-bar:nth-child(12) { --h: 36px; animation-duration: 0.48s; }
+
+/* Now playing info */
+.music-np-section { flex: 1; min-width: 0; }
+
+.music-np-label {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 0.6rem;
+  color: var(--accent-purple); letter-spacing: 0.15em; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.np-live-indicator {
+  display: flex; align-items: center; gap: 5px;
+  padding: 2px 8px;
+  background: rgba(184,146,255,0.1);
+  border: 1px solid rgba(184,146,255,0.2);
+  border-radius: 999px;
+}
+
+.np-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent-purple);
+  animation: np-pulse 1.5s ease-in-out infinite;
+}
+
+.np-dot.paused { animation: none; background: var(--text-muted); }
+
+@keyframes np-pulse {
+  0%,100% { opacity:1; transform:scale(1); }
+  50% { opacity:0.3; transform:scale(0.65); }
+}
+
+.music-np-title {
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+}
+
+.music-np-artist {
+  font-size: 0.75rem; color: var(--text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 10px;
+}
+
+.music-np-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.np-tag {
+  padding: 2px 8px; border-radius: 4px;
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+}
+
+.np-tag.lofi    { background: rgba(184,146,255,0.12); color: var(--accent-purple); }
+.np-tag.focus   { background: rgba(77,171,247,0.1);   color: var(--accent-blue); }
+.np-tag.energy  { background: rgba(255,159,67,0.1);   color: var(--accent-orange); }
+.np-tag.jazz    { background: rgba(255,215,0,0.08);   color: var(--accent-gold); }
+.np-tag.ambient { background: rgba(0,208,132,0.08);   color: var(--accent-green); }
+.np-tag.chill   { background: rgba(77,171,247,0.08);  color: var(--accent-blue); }
+
+/* Controls */
+.music-controls-row {
+  display: flex; align-items: center; gap: 8px;
+  position: relative; z-index: 1;
+  flex-shrink: 0;
+}
+
+.music-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-secondary);
+  transition: all 0.15s; flex-shrink: 0;
+}
+.music-btn:hover { border-color: rgba(184,146,255,0.3); color: var(--text-primary); background: rgba(184,146,255,0.08); }
+
+.music-btn.play-pause {
+  width: 48px; height: 48px;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+  border: none; color: white;
+  box-shadow: 0 4px 18px rgba(184,146,255,0.3);
+}
+.music-btn.play-pause:hover {
+  transform: scale(1.06);
+  box-shadow: 0 6px 24px rgba(184,146,255,0.45);
+}
+
+.music-btn.active { color: var(--accent-purple); border-color: rgba(184,146,255,0.3); }
+
+/* Progress */
+.music-progress-section {
+  position: relative; z-index: 1;
+  padding: 0 24px 8px;
+}
+
+.music-progress-bar {
+  position: relative; height: 4px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px; cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.music-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+  border-radius: 2px; width: 0%;
+  transition: width 0.2s linear;
+  position: relative;
+}
+
+.music-progress-fill::after {
+  content: '';
+  position: absolute;
+  right: -4px; top: 50%;
+  transform: translateY(-50%);
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 0 6px rgba(184,146,255,0.5);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.music-progress-bar:hover .music-progress-fill::after { opacity: 1; }
+
+.music-progress-times {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-muted);
+}
+
+/* Volume row */
+.music-volume-row {
+  position: relative; z-index: 1;
+  padding: 0 24px 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.vol-icon { color: var(--text-muted); flex-shrink: 0; }
+.music-vol-slider {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px;
+  outline: none; cursor: pointer;
+}
+.music-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px;
+  border-radius: 50%; background: var(--accent-purple); cursor: pointer;
+}
+
+.vol-label {
+  font-family: var(--font-mono); font-size: 0.6rem;
+  color: var(--text-muted); min-width: 28px; text-align: right;
+}
+
+/* Track list */
+.music-tracklist-wrap {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  position: relative; z-index: 1;
+}
+
+.tracklist-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px 10px;
+}
+
+.tracklist-label {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted);
+}
+
+.tracklist-count {
+  font-family: var(--font-mono); font-size: 0.62rem;
+  color: var(--accent-purple); font-weight: 600;
+}
+
+.music-tracklist {
+  max-height: 340px; overflow-y: auto;
+}
+
+.music-tracklist::-webkit-scrollbar { width: 4px; }
+.music-tracklist::-webkit-scrollbar-track { background: transparent; }
+.music-tracklist::-webkit-scrollbar-thumb { background: rgba(184,146,255,0.2); border-radius: 2px; }
+
+.music-track-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  position: relative;
+}
+.music-track-item:last-child { border-bottom: none; }
+.music-track-item:hover { background: rgba(255,255,255,0.03); }
+.music-track-item.active { background: rgba(184,146,255,0.06); }
+.music-track-item.active::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(to bottom, var(--accent-purple), var(--accent-blue));
+  border-radius: 0 2px 2px 0;
+}
+
+.track-num {
+  width: 24px;
+  font-family: var(--font-mono); font-size: 0.65rem;
+  color: var(--text-muted); text-align: center; flex-shrink: 0;
+}
+.music-track-item.active .track-num { color: var(--accent-purple); }
+
+.track-art {
+  width: 40px; height: 40px; border-radius: 8px;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; position: relative; overflow: hidden;
+}
+
+.track-art-spin {
+  position: absolute; inset: 0; border-radius: 8px;
+  border: 1.5px solid transparent;
+  border-top-color: var(--accent-purple);
+  display: none;
+}
+.music-track-item.active .track-art-spin { display: block; animation: disc-spin 2s linear infinite; }
+
+.track-info { flex: 1; min-width: 0; }
+.track-title {
+  font-size: 0.82rem; font-weight: 600; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;
+}
+.music-track-item.active .track-title { color: var(--accent-purple); }
+.track-artist { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.track-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+.track-tag {
+  padding: 2px 7px; border-radius: 4px;
+  font-size: 0.58rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.track-tag.lofi    { background: rgba(184,146,255,0.1); color: var(--accent-purple); }
+.track-tag.focus   { background: rgba(77,171,247,0.1);  color: var(--accent-blue); }
+.track-tag.energy  { background: rgba(255,159,67,0.1);  color: var(--accent-orange); }
+.track-tag.jazz    { background: rgba(255,215,0,0.08);  color: var(--accent-gold); }
+.track-tag.ambient { background: rgba(0,208,132,0.08);  color: var(--accent-green); }
+.track-tag.chill   { background: rgba(77,171,247,0.08); color: var(--accent-blue); }
+
+.track-dur {
+  font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-muted);
+  min-width: 34px; text-align: right;
+}
+
+/* ══ RESOURCE CARDS ══ */
+.res-card {
+  border-radius: 10px; border: 1px solid var(--border-color);
+  background: var(--bg-card); padding: 14px 16px;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none !important;
+}
+.res-card:hover { border-color: var(--border-bright); background: var(--bg-hover); transform: translateY(-1px); }
+
+.res-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+
+.res-info { flex: 1; min-width: 0; }
+.res-name { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+.res-desc { font-size: 0.68rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.res-arrow { color: var(--text-muted); opacity:0; transition: opacity 0.15s, transform 0.15s; flex-shrink: 0; }
+.res-card:hover .res-arrow { opacity:1; transform: translateX(3px); }
+
+
+@media (max-width: 768px) {
+  .devcom-page { padding: 12px 14px 40px; }
+  .devcom-hero-content { padding: 24px 20px 20px; }
+  .devcom-hero-title { font-size: 1.4rem; }
+  #devcom-forex-canvas { width: 45%; opacity: 0.3; }
+  .devcom-grid-2, .devcom-grid-3 { grid-template-columns: 1fr; }
+  .music-main-area { flex-wrap: wrap; gap: 16px; }
+  .music-controls-row { margin-top: 4px; }
+}
+</style>
+
+<div class="devcom-page">
+
+  <!-- ══════════════════════════════════════════════
+       HERO — FOREX CHART BACKGROUND
+  ══════════════════════════════════════════════ -->
+  <div class="devcom-hero">
+    <div class="devcom-hero-bg"></div>
+
+    <!-- Animated Forex Chart -->
+    <canvas id="devcom-forex-canvas"></canvas>
+
+    <div class="devcom-hero-content">
+      <div class="devcom-hero-eyebrow">
+        <span class="blink-dot"></span>
+        Flame Finance Network
+      </div>
+      <div class="devcom-hero-title">
+        <span class="grad-text">Developer</span> &amp; Komunitas
+      </div>
+      <div class="devcom-hero-desc">
+        Pusat eksklusif komunitas trader, resource developer, update platform, dan akses ke semua channel resmi Flame Finance.
+      </div>
+      <div class="devcom-hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-val" id="devcom-member-count">5K+</span>
+          <span class="hero-stat-lbl">Members</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">24/7</span>
+          <span class="hero-stat-lbl">Active</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">Free</span>
+          <span class="hero-stat-lbl">Akses</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 1: KOMUNITAS RESMI
+  ══════════════════════════════════════════════ -->
+  <div class="devcom-section-head">
+    <div class="section-icon-wrap green">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1C4.13 1 1 4.13 1 8C1 11.87 4.13 15 8 15C11.87 15 15 11.87 15 8C15 4.13 11.87 1 8 1Z" stroke="var(--accent-green)" stroke-width="1.5"/>
+        <path d="M5.5 8.5C5.5 7.12 6.62 6 8 6C9.38 6 10.5 7.12 10.5 8.5" stroke="var(--accent-green)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="devcom-section-title">Komunitas Resmi</span>
+    <div class="devcom-section-line"></div>
+  </div>
+
+  <div class="devcom-grid devcom-grid-2">
+    <a class="com-card wa" href="https://chat.whatsapp.com/FjyRRUq2dgOKXqrJVkzXmv" target="_blank" rel="noopener" style="text-decoration:none">
+      <div class="com-card-head">
+        <div class="com-card-logo wa">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.373 0 12c0 2.135.558 4.14 1.528 5.88L0 24l6.316-1.503A11.96 11.96 0 0012 24c6.627 0 12-5.373 12-12S18.628 0 12 0zm0 21.818a9.824 9.824 0 01-5.054-1.393l-.363-.214-3.74.981.998-3.648-.236-.375A9.816 9.816 0 012.182 12c0-5.424 4.394-9.818 9.818-9.818 5.424 0 9.818 4.394 9.818 9.818 0 5.424-4.394 9.818-9.818 9.818z"/></svg>
+        </div>
+        <div class="com-card-meta">
+          <div class="com-card-name">WhatsApp Group Finance Advanced</div>
+          <div class="com-card-type">Finance & Investment</div>
+        </div>
+        <div class="com-card-badge live">Join</div>
+      </div>
+      <div class="com-card-desc">Grup diskusi utama trader & investor. Analisis harian, signal sharing, Q&amp;A langsung dengan sesama trader/investor lainnya.</div>
+      <div class="com-card-footer">
+        <div class="com-card-members">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor" opacity="0.6"><path d="M6 6a2.5 2.5 0 100-5 2.5 2.5 0 000 5zm-4 4.5c0-2.2 1.8-4 4-4s4 1.8 4 4H2z"/></svg>
+          2,000+ anggota
+        </div>
+        <div class="com-card-action">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M10 6H2M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Bergabung
+        </div>
+      </div>
+    </a>
+
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 2: MUSIK TRADING PLAYER
+  ══════════════════════════════════════════════ -->
+  <div class="devcom-section-head">
+    <div class="section-icon-wrap purple">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M13 2v8a3 3 0 11-2-2.83V4.5L6 5.5v5a3 3 0 11-2-2.83V3l9-1z" stroke="var(--accent-purple)" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="devcom-section-title">Playlist Musik </span>
+    <div class="devcom-section-line"></div>
+  </div>
+
+  <div class="music-player-wrap">
+    <audio id="music-audio"></audio>
+
+    <!-- Main area: disc + visualizer + info + controls -->
+    <div class="music-main-area">
+      <!-- Vinyl Disc -->
+      <div class="music-disc-wrap">
+        <div class="music-disc" id="music-disc">
+          <div class="disc-ring"></div>
+          <div class="music-disc-inner" id="music-disc-emoji">🎵</div>
+        </div>
+        <!-- SVG Needle -->
+        <svg class="music-disc-needle off-disc" id="music-needle" viewBox="0 0 28 48" fill="none">
+          <line x1="14" y1="2" x2="14" y2="38" stroke="rgba(184,146,255,0.6)" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="14" cy="38" r="5" fill="rgba(184,146,255,0.15)" stroke="rgba(184,146,255,0.4)" stroke-width="1.2"/>
+          <circle cx="14" cy="38" r="2" fill="var(--accent-purple)"/>
+        </svg>
+      </div>
+
+      <!-- Visualizer -->
+      <div class="music-visualizer" id="music-visualizer">
+        <div class="viz-bar"></div><div class="viz-bar"></div><div class="viz-bar"></div>
+        <div class="viz-bar"></div><div class="viz-bar"></div><div class="viz-bar"></div>
+        <div class="viz-bar"></div><div class="viz-bar"></div><div class="viz-bar"></div>
+        <div class="viz-bar"></div><div class="viz-bar"></div><div class="viz-bar"></div>
+      </div>
+
+      <!-- Info -->
+      <div class="music-np-section">
+        <div class="music-np-label">
+          <div class="np-live-indicator">
+            <span class="np-dot paused" id="music-np-dot"></span>
+            NOW PLAYING
+          </div>
+        </div>
+        <div class="music-np-title" id="music-np-title">Pilih lagu dari playlist</div>
+        <div class="music-np-artist" id="music-np-artist">Flame Finance — Trading Playlist</div>
+        <div class="music-np-tags" id="music-np-tags">
+          <span class="np-tag lofi">lofi</span>
+          <span class="np-tag focus">focus</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="music-controls-row">
+        <button class="music-btn" id="music-btn-shuffle" title="Acak" onclick="musicShuffle()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 3h2.5a3 3 0 012.5 1.5L8 7m3-4h2v2M11 3l2 2-2 2M6 8.5L4 10.5a3 3 0 01-2.1.5H1m10 .5h2v-2M11 11l2-2-2-2"/></svg>
+        </button>
+        <button class="music-btn" title="Sebelumnya" onclick="musicPrev()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor"><path d="M2 2h1.5v9H2V2zm2.5 4.5L11 2v9L4.5 6.5z"/></svg>
+        </button>
+        <button class="music-btn play-pause" id="music-btn-play" title="Play/Pause" onclick="musicToggle()">
+          <svg id="music-play-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3l10 5-10 5V3z"/></svg>
+          <svg id="music-pause-icon" width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style="display:none"><rect x="3" y="2" width="3.5" height="12" rx="1.2"/><rect x="9.5" y="2" width="3.5" height="12" rx="1.2"/></svg>
+        </button>
+        <button class="music-btn" title="Berikutnya" onclick="musicNext()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="currentColor"><path d="M11 2h-1.5v9H11V2zm-2.5 4.5L2 2v9l6.5-4.5z"/></svg>
+        </button>
+        <button class="music-btn" id="music-btn-repeat" title="Ulangi" onclick="musicRepeat()">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2 4h9a1 1 0 011 1v2M12 10H3a1 1 0 01-1-1V7M4.5 2L2 4l2.5 2M9.5 12l2.5-2-2.5-2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="music-progress-section">
+      <div class="music-progress-bar" id="music-progress-bar" onclick="musicSeek(event)">
+        <div class="music-progress-fill" id="music-progress-fill"></div>
+      </div>
+      <div class="music-progress-times">
+        <span id="music-time-cur">0:00</span>
+        <span id="music-time-tot">0:00</span>
+      </div>
+    </div>
+
+    <!-- Volume -->
+    <div class="music-volume-row">
+      <span class="vol-icon">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M2 5h2l3-3v10L4 9H2V5z"/><path d="M10 4.5a3.5 3.5 0 010 5M12 2.5a6.5 6.5 0 010 9"/></svg>
+      </span>
+      <input class="music-vol-slider" type="range" min="0" max="100" value="80" oninput="musicVolume(this.value)">
+      <span class="vol-label" id="vol-label">80%</span>
+    </div>
+
+    <!-- Track List -->
+    <div class="music-tracklist-wrap">
+      <div class="tracklist-header">
+        <span class="tracklist-label">🎶 Playlist</span>
+        <span class="tracklist-count" id="tracklist-count">10 Lagu</span>
+      </div>
+      <div class="music-tracklist" id="music-tracklist">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 3: RESOURCE DEVELOPER
+  ══════════════════════════════════════════════ -->
+  <div class="devcom-section-head">
+    <div class="section-icon-wrap blue">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <polyline points="5,4 1,8 5,12" stroke="var(--accent-blue)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="11,4 15,8 11,12" stroke="var(--accent-blue)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="9" y1="2" x2="7" y2="14" stroke="var(--accent-blue)" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="devcom-section-title">Resource Developer</span>
+    <div class="devcom-section-line"></div>
+  </div>
+
+  <div class="devcom-grid devcom-grid-3">
+    <a class="res-card" href="https://www.tradingview.com/pine-script-docs/" target="_blank" rel="noopener" style="text-decoration:none">
+      <div class="res-icon" style="background:rgba(77,171,247,0.1);border:1px solid rgba(77,171,247,0.18);">📊</div>
+      <div class="res-info"><div class="res-name">Pine Script Docs</div><div class="res-desc">TradingView scripting reference</div></div>
+      <div class="res-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6H2M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </a>
+    <a class="res-card" href="https://financialmodelingprep.com/developer/docs/" target="_blank" rel="noopener" style="text-decoration:none">
+      <div class="res-icon" style="background:rgba(0,208,132,0.1);border:1px solid rgba(0,208,132,0.18);">🔌</div>
+      <div class="res-info"><div class="res-name">Financial API Docs</div><div class="res-desc">FMP stock &amp; financial data API</div></div>
+      <div class="res-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6H2M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </a>
+    <a class="res-card" href="https://binance-docs.github.io/apidocs/spot/en/" target="_blank" rel="noopener" style="text-decoration:none">
+      <div class="res-icon" style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.16);">₿</div>
+      <div class="res-info"><div class="res-name">Binance API</div><div class="res-desc">Crypto market data REST/WS</div></div>
+      <div class="res-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6H2M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </a>
+    <a class="res-card" href="https://twelvedata.com/docs" target="_blank" rel="noopener" style="text-decoration:none">
+      <div class="res-icon" style="background:rgba(184,146,255,0.1);border:1px solid rgba(184,146,255,0.18);">📈</div>
+      <div class="res-info"><div class="res-name">Twelve Data API</div><div class="res-desc">Real-time stocks, forex &amp; crypto</div></div>
+      <div class="res-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6H2M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </a>
+    <a class="res-card" href="https://firebase.google.com/docs" target="_blank" rel="noopener" style="text-decoration:none">
+      <div class="res-icon" style="background:rgba(255,159,67,0.1);border:1px solid rgba(255,159,67,0.18);">🔥</div>
+      <div class="res-info"><div class="res-name">Firebase Docs</div><div class="res-desc">Auth, Realtime DB &amp; hosting</div></div>
+      <div class="res-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6H2M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </a>
+    <a class="res-card" href="https://tradingeconomics.com/calendar" target="_blank" rel="noopener" style="text-decoration:none">
+      <div class="res-icon" style="background:rgba(77,171,247,0.1);border:1px solid rgba(77,171,247,0.18);">🗓️</div>
+      <div class="res-info"><div class="res-name">Economic Calendar</div><div class="res-desc">Trading Economics event data</div></div>
+      <div class="res-arrow"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6H2M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </a>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   DEVCOM v3 — Forex Chart + Music Player
+═══════════════════════════════════════════════════════ */
+
+/* ── Member counter ── */
+;(function(){
+  const el = document.getElementById('devcom-member-count');
+  if(!el) return;
+  let c=0, t=5000, s=Math.ceil(t/60);
+  const iv = setInterval(()=>{ c=Math.min(c+s,t); el.textContent=c>=1000?(c/1000).toFixed(1)+'K+':c+'+'; if(c>=t) clearInterval(iv); }, 20);
+})();
+
+/* ══════════════════════════════════════════
+   FOREX CHART ANIMATION — FLUID LIVE VERSION
+══════════════════════════════════════════ */
+(function(){
+  const canvas = document.getElementById('devcom-forex-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let W, H;
+  let candles = [];        // {o,h,l,c,grow}
+  let priceHistory = [];   // fine-grained points for the smooth flowing line
+  let lastPrice = 1.0842;
+  let lastTick = 0;
+  let nextCandleAt = 0;
+  let pulseT = 0;
+
+  const MAX_CANDLES = 42;
+  const HIST_LEN = 140;
+  const CANDLE_MS = 1500;
+
+  function resize(){
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+
+  function seed(){
+    let price = 1.0840;
+    candles = [];
+    for(let i=0; i<MAX_CANDLES; i++){
+      const o = price;
+      const change = (Math.random()-0.48)*0.0014;
+      const c = Math.max(1.075, Math.min(1.095, price + change));
+      const h = Math.max(o,c) + Math.random()*0.0004;
+      const l = Math.min(o,c) - Math.random()*0.0004;
+      candles.push({o,h,l,c,grow:1});
+      price = c;
+    }
+    lastPrice = price;
+    priceHistory = new Array(HIST_LEN).fill(lastPrice);
+  }
+
+  function addCandle(){
+    const o = lastPrice;
+    const drift = (Math.random()-0.46)*0.0013;
+    const c = Math.max(1.070, Math.min(1.100, o + drift));
+    const h = Math.max(o,c) + Math.random()*0.0005;
+    const l = Math.min(o,c) - Math.random()*0.0005;
+    candles.push({o,h,l,c,grow:0});
+    if(candles.length > MAX_CANDLES) candles.shift();
+    lastPrice = c;
+  }
+
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  function priceToY(p, mn, mx){ return H*0.88 - ((p - mn)/(mx - mn)) * (H*0.74); }
+
+  function draw(now){
+    if(!W || !H){ requestAnimationFrame(draw); return; }
+    if(!lastTick) lastTick = now;
+    const dt = Math.min(48, now - lastTick);
+    lastTick = now;
+
+    if(now > nextCandleAt){
+      addCandle();
+      nextCandleAt = now + CANDLE_MS + Math.random()*500;
+    }
+
+    // grow-in animation for newest candle
+    for(let i=candles.length-1; i>=Math.max(0,candles.length-2); i--){
+      if(candles[i].grow < 1) candles[i].grow = Math.min(1, candles[i].grow + dt/240);
+    }
+
+    // gentle continuous live jitter on the flowing line
+    const jitter = (Math.random()-0.5)*0.00007;
+    priceHistory.push(Math.max(1.070, Math.min(1.100, priceHistory[priceHistory.length-1] + jitter)));
+    priceHistory.shift();
+
+    pulseT = (pulseT + dt/1000) % 1.6;
+
+    ctx.clearRect(0,0,W,H);
+
+    const sampled = [];
+    for(let i=0;i<candles.length;i++){ sampled.push(candles[i].h, candles[i].l); }
+    for(let i=0;i<priceHistory.length;i++){ sampled.push(priceHistory[i]); }
+    const mn = Math.min.apply(null, sampled) - 0.0015;
+    const mx = Math.max.apply(null, sampled) + 0.0015;
+
+    // ── soft drifting grid ──
+    const drift = (now/45) % (W/7);
+    ctx.strokeStyle = 'rgba(77,171,247,0.05)';
+    ctx.lineWidth = 1;
+    for(let g=-1; g<8; g++){
+      const x = g*(W/7) - drift;
+      ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+    }
+    for(let g=0; g<5; g++){
+      const y = H*0.1 + (H*0.74/4)*g;
+      ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    }
+
+    // ── candlesticks (grow in from the middle, glassy gradient fill) ──
+    const cW = W / candles.length;
+    candles.forEach((cd,i)=>{
+      const x = i*cW + cW*0.5;
+      const bull = cd.c >= cd.o;
+      const col = bull ? [0,208,132] : [255,71,87];
+      const grow = cd.grow;
+      const w = Math.max(2, cW*0.55);
+
+      const midY = priceToY((cd.o+cd.c)/2, mn, mx);
+      const yH = priceToY(cd.h,mn,mx), yL = priceToY(cd.l,mn,mx);
+      const wickTop = midY - (midY-yH)*grow;
+      const wickBot = midY + (yL-midY)*grow;
+
+      ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},0.85)`;
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x,wickTop); ctx.lineTo(x,wickBot); ctx.stroke();
+
+      const yO = priceToY(cd.o,mn,mx), yC = priceToY(cd.c,mn,mx);
+      const bodyTop = midY - (midY-Math.min(yO,yC))*grow;
+      const bodyBot = midY + (Math.max(yO,yC)-midY)*grow;
+      const bh = Math.max(1.5, bodyBot-bodyTop);
+
+      const bodyGrad = ctx.createLinearGradient(0,bodyTop,0,bodyBot);
+      bodyGrad.addColorStop(0, `rgba(${col[0]},${col[1]},${col[2]},0.4)`);
+      bodyGrad.addColorStop(1, `rgba(${col[0]},${col[1]},${col[2]},0.08)`);
+      ctx.fillStyle = bodyGrad;
+      ctx.fillRect(x-w/2, bodyTop, w, bh);
+      ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},0.9)`;
+      ctx.lineWidth = 0.8;
+      ctx.strokeRect(x-w/2, bodyTop, w, bh);
+    });
+
+    // ── flowing curved price line with soft glow ──
+    const n = priceHistory.length;
+    const fillGrad = ctx.createLinearGradient(0,0,0,H);
+    fillGrad.addColorStop(0,'rgba(184,146,255,0.20)');
+    fillGrad.addColorStop(1,'rgba(184,146,255,0)');
+
+    ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const x = (i/(n-1))*W;
+      const y = priceToY(priceHistory[i],mn,mx);
+      if(i===0){ ctx.moveTo(x,y); }
+      else {
+        const px = ((i-1)/(n-1))*W;
+        const py = priceToY(priceHistory[i-1],mn,mx);
+        ctx.quadraticCurveTo(px,py,(px+x)/2,(py+y)/2);
+      }
+    }
+    ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
+    ctx.fillStyle = fillGrad;
+    ctx.fill();
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(184,146,255,0.65)';
+    ctx.shadowBlur = 9;
+    ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const x = (i/(n-1))*W;
+      const y = priceToY(priceHistory[i],mn,mx);
+      if(i===0){ ctx.moveTo(x,y); }
+      else {
+        const px = ((i-1)/(n-1))*W;
+        const py = priceToY(priceHistory[i-1],mn,mx);
+        ctx.quadraticCurveTo(px,py,(px+x)/2,(py+y)/2);
+      }
+    }
+    ctx.strokeStyle = 'rgba(184,146,255,0.9)';
+    ctx.lineWidth = 1.8;
+    ctx.stroke();
+    ctx.restore();
+
+    // ── pulsing radar ping + price tag at the live edge ──
+    const curX = W-10, curY = priceToY(priceHistory[n-1],mn,mx);
+    for(let r=0; r<2; r++){
+      const p = (pulseT + r*0.8) % 1.6;
+      if(p > 1) continue;
+      ctx.beginPath();
+      ctx.arc(curX,curY, 4+p*15, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(184,146,255,${0.45*(1-p)})`;
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(curX,curY,3.5,0,Math.PI*2);
+    ctx.fillStyle = '#fff';
+    ctx.shadowColor = 'rgba(184,146,255,0.95)';
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    const tagW = 64, tagH = 18;
+    let tagY = curY - tagH/2;
+    tagY = Math.max(2, Math.min(H-tagH-2, tagY));
+    roundRect(W-tagW-4, tagY, tagW, tagH, 5);
+    ctx.fillStyle = 'rgba(13,10,20,0.75)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(184,146,255,0.5)';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(225,215,255,0.95)';
+    ctx.font = 'bold 9px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(priceHistory[n-1].toFixed(4), W-tagW/2-4, tagY+tagH/2+3.2);
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  seed();
+  requestAnimationFrame(draw);
+})();
+
+/* ══════════════════════════════════════════
+   MUSIC PLAYER — PRESET TRACKS
+══════════════════════════════════════════ */
+const TRACKS = [
+  { title: 'Doin Time',       artist: 'Lana Del',    tag: 'lofi',   emoji: '🎵', url: '../music/dointime.mp3' },
+  { title: 'Starboy',        artist: 'Weekend',    tag: 'energy', emoji: '🎵', url: '../music/Starboy.mp3' },
+  { title: 'Joanna', artist: 'Breakbeat',    tag: 'focus',  emoji: '🎵', url: '../music/joanna.mp3' },
+  { title: 'Carol Of Bells',     artist: 'Beats',    tag: 'ambient',emoji: '🎵', url: '../music/Bells.mp3' },
+  { title: 'Japan Reverb',     artist: 'Beats',    tag: 'energy', emoji: '🎵', url: '../music/jpn.mp3' },
+  { title: 'Tourner Danse',     artist: 'Indilla',    tag: 'chill',  emoji: '🎵', url: '../music/Tourner.mp3' },
+  { title: 'X-COOL',       artist: 'Beats',    tag: 'jazz',   emoji: '🎵', url: '../music/x-cool.mp3' },
+  { title: 'We Dont Talk Anymore',    artist: 'Charlie',    tag: 'focus',  emoji: '🎵', url: '../music/anymore.mp3' },
+  { title: 'Love Story',   artist: 'Indilla',    tag: 'lofi',   emoji: '🎵', url: '../music/indilla.mp3' },
+  { title: 'Middle Of Night',       artist: 'Beats',    tag: 'ambient',emoji: '🎵', url: '../music/Middle.mp3' },
+];
+
+const ART_GRADS = [
+  'linear-gradient(135deg,#1a1a2e,#16213e)','linear-gradient(135deg,#0d0d1a,#2d1b69)',
+  'linear-gradient(135deg,#0f0c29,#302b63)','linear-gradient(135deg,#000d1a,#004080)',
+  'linear-gradient(135deg,#1a001a,#3d0066)','linear-gradient(135deg,#001a00,#005500)',
+  'linear-gradient(135deg,#1a1000,#554400)','linear-gradient(135deg,#0d0a00,#3d3000)',
+  'linear-gradient(135deg,#001a1a,#005555)','linear-gradient(135deg,#0d0014,#30002a)',
+];
+
+const _MP = {
+  audio: null,
+  current: -1,
+  playing: false,
+  shuffle: false,
+  repeatState: 0, // 0=none,1=one,2=all
+};
+
+function _mp_init(){
+  const a = document.getElementById('music-audio');
+  if(!a) return;
+  _MP.audio = a;
+  a.volume = 0.8;
+  a.addEventListener('timeupdate', _mp_tick);
+  a.addEventListener('ended', _mp_onEnded);
+  a.addEventListener('loadedmetadata', _mp_tick);
+  _mp_renderList();
+}
+
+function _mp_artBg(i){ return ART_GRADS[0]; }
+
+function _mp_renderList(){
+  const list = document.getElementById('music-tracklist');
+  if(!list) return;
+  list.innerHTML = '';
+  TRACKS.forEach((t, i)=>{
+    const active = i === _MP.current;
+    const div = document.createElement('div');
+    div.className = 'music-track-item' + (active ? ' active' : '');
+    div.innerHTML = `
+      <div class="track-num">${active && _MP.playing ? '▶' : i+1}</div>
+      <div class="track-art" style="background:${_mp_artBg(i)}">
+        ${t.emoji}
+        <div class="track-art-spin"></div>
+      </div>
+      <div class="track-info">
+        <div class="track-title">${t.title}</div>
+        <div class="track-artist">${t.artist}</div>
+      </div>
+      <div class="track-right">
+        <span class="track-tag ${t.tag}">${t.tag}</span>
+        <span class="track-dur" id="dur-${i}">–:––</span>
+      </div>`;
+    div.addEventListener('click', ()=>{ _mp_loadTrack(i); _mp_play(); });
+    list.appendChild(div);
+  });
+  _mp_preloadDurations();
+}
+
+function _mp_preloadDurations(){
+  TRACKS.forEach((t,i)=>{
+    const tmp = new Audio(t.url);
+    tmp.addEventListener('loadedmetadata',()=>{
+      const el = document.getElementById('dur-'+i);
+      if(el) el.textContent = _fmt(tmp.duration);
+    });
+    tmp.preload = 'metadata';
+  });
+}
+
+function _mp_loadTrack(idx){
+  if(idx<0||idx>=TRACKS.length) return;
+  _MP.current = idx;
+  const t = TRACKS[idx];
+  _MP.audio.src = t.url;
+  _MP.audio.load();
+  // update NP UI
+  const title  = document.getElementById('music-np-title');
+  const artist = document.getElementById('music-np-artist');
+  const emoji  = document.getElementById('music-disc-emoji');
+  const tagsEl = document.getElementById('music-np-tags');
+  if(title)  title.textContent  = t.title;
+  if(artist) artist.textContent = t.artist;
+  if(emoji)  emoji.textContent  = t.emoji;
+  if(tagsEl) tagsEl.innerHTML   = `<span class="np-tag ${t.tag}">${t.tag}</span><span class="np-tag focus">flame beats</span>`;
+  _mp_renderList();
+}
+
+function musicToggle(){
+  if(!_MP.audio) return;
+  if(_MP.current<0){ _mp_loadTrack(0); _mp_play(); return; }
+  _MP.playing ? _mp_pause() : _mp_play();
+}
+
+function _mp_play(){
+  if(!_MP.audio) return;
+  _MP.audio.play().then(()=>{
+    _MP.playing=true; _mp_syncUI();
+  }).catch(()=>{});
+}
+
+function _mp_pause(){
+  if(!_MP.audio) return;
+  _MP.audio.pause();
+  _MP.playing=false; _mp_syncUI();
+}
+
+function _mp_syncUI(){
+  const pi = document.getElementById('music-play-icon');
+  const pa = document.getElementById('music-pause-icon');
+  const dot= document.getElementById('music-np-dot');
+  const disc = document.getElementById('music-disc');
+  const viz  = document.getElementById('music-visualizer');
+  const needle = document.getElementById('music-needle');
+
+  if(pi) pi.style.display = _MP.playing?'none':'block';
+  if(pa) pa.style.display = _MP.playing?'block':'none';
+  if(dot){ dot.classList.toggle('paused',!_MP.playing); }
+  if(disc){ _MP.playing ? disc.classList.add('spinning') : disc.classList.remove('spinning'); }
+  if(viz){ _MP.playing ? viz.classList.add('playing') : viz.classList.remove('playing'); }
+  if(needle){ needle.className = 'music-disc-needle ' + (_MP.playing ? 'on-disc' : 'off-disc'); }
+
+  // update track list item icons
+  const items = document.querySelectorAll('.music-track-item');
+  items.forEach((el,i)=>{
+    const numEl = el.querySelector('.track-num');
+    if(!numEl) return;
+    numEl.textContent = (i===_MP.current&&_MP.playing) ? '▶' : String(i+1);
+  });
+}
+
+function musicPrev(){
+  const idx = _MP.current<=0 ? TRACKS.length-1 : _MP.current-1;
+  _mp_loadTrack(idx);
+  if(_MP.playing) _mp_play();
+}
+
+function musicNext(){
+  let idx;
+  if(_MP.shuffle) idx = Math.floor(Math.random()*TRACKS.length);
+  else idx = (_MP.current+1) % TRACKS.length;
+  _mp_loadTrack(idx);
+  if(_MP.playing) _mp_play();
+}
+
+function musicShuffle(){
+  _MP.shuffle = !_MP.shuffle;
+  const btn = document.getElementById('music-btn-shuffle');
+  if(btn) btn.classList.toggle('active', _MP.shuffle);
+}
+
+function musicRepeat(){
+  _MP.repeatState = (_MP.repeatState+1)%3;
+  const btn = document.getElementById('music-btn-repeat');
+  const colors = ['', 'var(--accent-purple)', 'var(--accent-blue)'];
+  if(btn){ btn.style.color = colors[_MP.repeatState]; btn.classList.toggle('active', _MP.repeatState>0); }
+  const tips = ['Ulangi: Mati','Ulangi: Satu','Ulangi: Semua'];
+  if(btn) btn.title = tips[_MP.repeatState];
+}
+
+function musicVolume(v){
+  if(_MP.audio) _MP.audio.volume = v/100;
+  const lbl = document.getElementById('vol-label');
+  if(lbl) lbl.textContent = v+'%';
+}
+
+function musicSeek(e){
+  if(!_MP.audio||!_MP.audio.duration) return;
+  const bar = document.getElementById('music-progress-bar');
+  if(!bar) return;
+  const rect = bar.getBoundingClientRect();
+  const pct = Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  _MP.audio.currentTime = pct*_MP.audio.duration;
+}
+
+function _mp_tick(){
+  const a = _MP.audio;
+  if(!a||!a.duration) return;
+  const pct = (a.currentTime/a.duration)*100;
+  const fill = document.getElementById('music-progress-fill');
+  if(fill) fill.style.width = pct+'%';
+  const cur = document.getElementById('music-time-cur');
+  const tot = document.getElementById('music-time-tot');
+  if(cur) cur.textContent = _fmt(a.currentTime);
+  if(tot) tot.textContent = _fmt(a.duration);
+}
+
+function _mp_onEnded(){
+  _MP.playing=false;
+  if(_MP.repeatState===1){ _MP.audio.currentTime=0; _mp_play(); }
+  else if(_MP.repeatState===2){ musicNext(); }
+  else if(_MP.shuffle){ musicNext(); }
+  else {
+    const n = _MP.current+1;
+    if(n<TRACKS.length){ _mp_loadTrack(n); _mp_play(); }
+    else { _mp_syncUI(); }
+  }
+}
+
+function _fmt(s){
+  if(!s||isNaN(s)) return '0:00';
+  const m=Math.floor(s/60), sec=Math.floor(s%60);
+  return m+':'+(sec<10?'0':'')+sec;
+}
+
+// Init
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', _mp_init);
+} else {
+  _mp_init();
+}
+</script>
