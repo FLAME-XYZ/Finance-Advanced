@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Masuk — FLAME FINANCE ADVANCED</title>
+<link rel="icon" type="image/png" href="logoku.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/auth-style.css" />
+</head>
+<body class="dark-mode standalone-page">
+
+<!-- Loader sampai status auth diketahui (cegah flash form login kalau ternyata sudah login) -->
+<div class="fullscreen-loader" id="gate-loader">
+  <div class="loader-logo-box">
+    <img src="logoku.png" alt="Flame Finance Advanced" />
+    <div class="ring"></div>
+  </div>
+  <div class="loader-text">
+    <div class="loader-brand">FINANCE ADVANCED</div>
+    <span class="loader-status">Memeriksa sesi...</span>
+  </div>
+</div>
+
+<div class="auth-shell" id="auth-shell" style="display:none">
+
+  <!-- ══════════════ PANEL KIRI — BRAND ══════════════ -->
+  <div class="auth-brand">
+    <div class="auth-brand-top">
+      <div class="auth-brand-logo-box">
+        <img src="logoku.png" alt="Flame Finance Advanced" />
+      </div>
+      <div>
+        <div class="auth-brand-name">FLAME FINANCE</div>
+        <div class="auth-brand-sub">ADVANCED · ANALYTICS</div>
+      </div>
+    </div>
+
+    <div class="auth-brand-mid">
+      <div class="auth-brand-headline">Analisis pasar <em>profesional</em>,<br>di satu dashboard.</div>
+      <div class="auth-brand-desc">Chart real-time, analisis SMC/ICT, screener multi-instrumen, dan kalender ekonomi — forex, crypto, dan metals dalam satu platform.</div>
+    </div>
+
+    <div class="auth-brand-bottom">
+      <div class="auth-stat"><div class="auth-stat-num">3</div><div class="auth-stat-label">Asset Class</div></div>
+      <div class="auth-stat"><div class="auth-stat-num">9</div><div class="auth-stat-label">Timeframe</div></div>
+      <div class="auth-stat"><div class="auth-stat-num">24/7</div><div class="auth-stat-label">Live Data</div></div>
+    </div>
+
+    <div class="auth-candles" id="auth-candles"></div>
+  </div>
+
+  <!-- ══════════════ PANEL KANAN — FORM LOGIN ══════════════ -->
+  <div class="auth-form-panel">
+    <div class="auth-card">
+
+      <div class="auth-card-logo-mobile">
+        <div class="auth-card-logo-mobile-box">
+          <img src="logoku.png" alt="Logo" />
+        </div>
+        <span>FINANCE ADVANCED</span>
+      </div>
+
+
+      <div class="auth-msg error" id="login-error"></div>
+
+      <form id="login-form" autocomplete="on">
+        <div class="auth-field">
+          <label class="auth-label" for="login-email">Email</label>
+          <input class="auth-input" type="email" id="login-email" placeholder="Masukkan G-mail" required autocomplete="email" />
+        </div>
+        <div class="auth-field">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <label class="auth-label" for="login-password" style="margin-bottom:0">Password</label>
+            <a href="#" id="forgot-pw-link" style="font-family:var(--font-sans);font-size:0.72rem;color:var(--accent-blue);text-decoration:none;font-weight:600">Lupa password?</a>
+          </div>
+          <div class="auth-input-wrap">
+            <input class="auth-input" type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password" style="padding-right:40px" />
+            <button type="button" class="auth-input-toggle" id="toggle-pw" title="Tampilkan password">
+              <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M1 8.5C1 8.5 3.7 3 8.5 3C13.3 3 16 8.5 16 8.5C16 8.5 13.3 14 8.5 14C3.7 14 1 8.5 1 8.5Z" stroke="currentColor" stroke-width="1.4"/><circle cx="8.5" cy="8.5" r="2.3" stroke="currentColor" stroke-width="1.4"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="auth-submit" id="login-btn">
+          <span id="login-btn-text">Masuk</span>
+        </button>
+      </form>
+
+      <!-- ── Panel Lupa Password (tersembunyi default) ── -->
+      <div id="forgot-pw-panel" style="display:none;margin-top:18px;padding-top:18px;border-top:1px solid var(--border-color)">
+        <div style="font-family:var(--font-sans);font-weight:700;font-size:0.85rem;color:var(--text-primary);margin-bottom:4px">Reset Password</div>
+        <div style="font-family:var(--font-sans);font-size:0.76rem;color:var(--text-secondary);margin-bottom:14px;line-height:1.5">Masukkan email akun Anda. Kami kirim link reset password ke email tersebut.</div>
+        <div class="auth-msg" id="forgot-pw-msg"></div>
+        <div class="auth-field">
+          <input class="auth-input" type="email" id="forgot-pw-email" placeholder="nama@email.com" />
+        </div>
+        <button type="button" class="auth-submit" id="forgot-pw-btn" style="background:var(--accent-blue)">
+          <span id="forgot-pw-btn-text">Kirim Link Reset</span>
+        </button>
+        <button type="button" id="forgot-pw-cancel" style="width:100%;margin-top:8px;padding:9px;background:none;border:none;color:var(--text-secondary);font-family:var(--font-sans);font-size:0.78rem;cursor:pointer">Batal, kembali ke login</button>
+      </div>
+
+      <div class="auth-switch" id="login-switch-line">Belum punya akun? <a href="register.html">Daftar di sini</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FIREBASE SDK ══════════════ -->
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-database-compat.js"></script>
+<script src="js/firebase-init.js"></script>
+<script src="js/device-fingerprint.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+// ── Render motif candle (dekoratif, acak tiap load) ──
+(function renderCandles() {
+  const host = document.getElementById('auth-candles');
+  let html = '';
+  for (let i = 0; i < 34; i++) {
+    const h = 18 + Math.random() * 82;
+    const down = Math.random() > 0.55;
+    const delay = (Math.random() * 4).toFixed(2);
+    html += `<div class="auth-candle${down ? ' down' : ''}" style="height:${h}%;animation-delay:${delay}s"></div>`;
+  }
+  host.innerHTML = html;
+})();
+
+// ── Toggle show/hide password ──
+document.getElementById('toggle-pw').addEventListener('click', function () {
+  const inp = document.getElementById('login-password');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+});
+
+// ── Lupa password panel ──
+document.getElementById('forgot-pw-link').addEventListener('click', function (e) {
+  e.preventDefault();
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('login-switch-line').style.display = 'none';
+  document.getElementById('forgot-pw-panel').style.display = 'block';
+  document.getElementById('forgot-pw-email').value = document.getElementById('login-email').value || '';
+});
+
+document.getElementById('forgot-pw-cancel').addEventListener('click', function () {
+  document.getElementById('forgot-pw-panel').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('login-switch-line').style.display = 'block';
+  const msg = document.getElementById('forgot-pw-msg');
+  msg.classList.remove('show', 'error', 'success');
+});
+
+document.getElementById('forgot-pw-btn').addEventListener('click', async function () {
+  const msg = document.getElementById('forgot-pw-msg');
+  msg.classList.remove('show', 'error', 'success');
+
+  const email = document.getElementById('forgot-pw-email').value;
+  const btn = document.getElementById('forgot-pw-btn');
+  const btnText = document.getElementById('forgot-pw-btn-text');
+  btn.disabled = true;
+  btnText.innerHTML = '<span class="auth-spinner"></span>';
+
+  try {
+    await window.Auth.resetPassword(email);
+    msg.textContent = 'Link reset password sudah dikirim. Cek inbox (atau folder spam) email Anda.';
+    msg.classList.add('show', 'success');
+    btnText.textContent = 'Terkirim ✓';
+  } catch (err) {
+    const map = {
+      'auth/invalid-email': 'Format email tidak valid.',
+      'auth/user-not-found': 'Email ini belum terdaftar.',
+      'auth/too-many-requests': 'Terlalu banyak percobaan. Coba lagi nanti.',
+    };
+    msg.textContent = map[err.code] || err.message || 'Gagal mengirim link reset.';
+    msg.classList.add('show', 'error');
+    btn.disabled = false;
+    btnText.textContent = 'Kirim Link Reset';
+  }
+});
+
+function showError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function hideError() {
+  document.getElementById('login-error').classList.remove('show');
+}
+
+function friendlyAuthError(err) {
+  const code = err && err.code;
+  const map = {
+    'auth/invalid-email': 'Format email tidak valid.',
+    'auth/user-not-found': 'Email belum terdaftar.',
+    'auth/wrong-password': 'Password salah.',
+    'auth/invalid-credential': 'Email atau password salah.',
+    'auth/too-many-requests': 'Terlalu banyak percobaan. Coba lagi beberapa saat lagi.',
+    'auth/network-request-failed': 'Koneksi gagal. Periksa internet Anda.',
+  };
+  return map[code] || (err && err.message) || 'Terjadi kesalahan. Coba lagi.';
+}
+
+// ── Cek sesi: kalau sudah login & tidak diblokir → langsung ke app ──
+(async function gate() {
+  try {
+    const result = await window.Auth.waitForAuth();
+    if (result.user) {
+      window.location.href = 'index.html';
+      return;
+    }
+    if (result.blocked) {
+      document.getElementById('gate-loader').style.display = 'none';
+      document.getElementById('auth-shell').style.display = 'grid';
+      showError('Akun ini sudah dihapus/diblokir oleh admin. Hubungi admin via WhatsApp jika ini kesalahan.');
+      return;
+    }
+    document.getElementById('gate-loader').style.display = 'none';
+    document.getElementById('auth-shell').style.display = 'grid';
+  } catch (err) {
+    console.error('[Login] Gate error:', err);
+    const loader = document.getElementById('gate-loader');
+    if (loader) {
+      loader.innerHTML = `
+        <div style="text-align:center;max-width:300px;padding:0 20px">
+          <div style="font-family:var(--font-sans);color:var(--text-primary);font-weight:700;font-size:0.95rem;margin-bottom:8px">Gagal memuat</div>
+          <div style="font-family:var(--font-sans);color:var(--text-secondary);font-size:0.8rem;line-height:1.5;margin-bottom:18px">Periksa koneksi internet Anda lalu coba lagi.</div>
+          <button class="auth-submit" style="width:auto;padding:10px 20px" onclick="window.location.reload()">Muat Ulang</button>
+        </div>`;
+    }
+  }
+})();
+
+// ── Submit login ──
+document.getElementById('login-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  hideError();
+
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const btnText = document.getElementById('login-btn-text');
+
+  btn.disabled = true;
+  btnText.innerHTML = '<span class="auth-spinner"></span>';
+
+  try {
+    await window.Auth.login(email, password);
+    window.location.href = 'index.html';
+  } catch (err) {
+    showError(friendlyAuthError(err));
+    btn.disabled = false;
+    btnText.textContent = 'Masuk';
+  }
+});
+</script>
+
+</body>
+</html>

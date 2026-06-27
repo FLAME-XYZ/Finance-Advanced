@@ -1,0 +1,23 @@
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')",
+        "role": {
+          ".validate": "newData.val() === 'free' || (newData.val() === 'premium' && root.child('licenses').child(newData.parent().child('licenseUsed').val()).child('usedBy').val() === auth.uid) || (newData.val() === 'admin' && auth.token.email === 'admin@flamefinance.id') || root.child('users').child(auth.uid).child('role').val() === 'admin'"
+        },
+        "premiumUntil": {
+          ".validate": "newData.val() === null || root.child('users').child(auth.uid).child('role').val() === 'admin' || (newData.parent().child('role').val() === 'premium' && newData.parent().child('licenseUsed').val() != null && root.child('licenses').child(newData.parent().child('licenseUsed').val()).child('usedBy').val() === auth.uid && newData.val() <= root.child('licenses').child(newData.parent().child('licenseUsed').val()).child('usedAt').val() + root.child('licenses').child(newData.parent().child('licenseUsed').val()).child('duration').val() * 86400000 + 300000)"
+        }
+      }
+    },
+    "licenses": {
+      ".read": "auth != null",
+      "$code": {
+        ".write": "auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || (data.child('status').val() === 'unused' && newData.child('usedBy').val() === auth.uid))"
+      }
+    }
+  }
+}
