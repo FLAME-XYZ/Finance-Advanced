@@ -1,0 +1,3219 @@
+<!-- ═══════════════════════════════════════════════════════════
+     ProTrader Analytics — pages/analysis.html  (v3.0)
+     Halaman analisis advanced: SMC, ICT, Fibonacci, Elliott,
+     Wyckoff, Harmonic, Multi-Timeframe, Confluence Score
+     Bergantung pada: window.Analysis, window.Signals,
+                      window.Indicators, window.AppState
+═══════════════════════════════════════════════════════════ -->
+
+<style>
+/* ═══════════════════════════ ANALYSIS PAGE STYLES ═══════════════════════════ */
+
+/* ── Page Layout ── */
+.analysis-page { animation: fadeIn 0.3s ease; }
+
+.analysis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.analysis-title-block { display: flex; flex-direction: column; gap: 2px; }
+.analysis-page-title  {
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--text-primary); letter-spacing: -0.02em;
+}
+.analysis-page-sub {
+  font-size: 0.72rem; color: var(--text-secondary);
+}
+
+.analysis-controls {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+
+/* ── Instrument Selector ── */
+.an-sym-select, .an-tf-select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: var(--radius);
+  padding: 7px 10px;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: border-color var(--transition);
+  min-width: 120px;
+}
+.an-sym-select:focus, .an-tf-select:focus {
+  border-color: var(--accent-blue);
+  outline: none;
+}
+
+/* ── Analyze Button ── */
+.btn-analyze {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--accent-green); color: #0d1117;
+  border: none; border-radius: var(--radius);
+  padding: 7px 16px; font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; transition: all var(--transition);
+}
+.btn-analyze:hover { background: #00e893; box-shadow: var(--shadow-green); transform: translateY(-1px); }
+.btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-analyze.loading .btn-analyze-icon { animation: spin 1s linear infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Last Update Badge ── */
+.an-lastupdate {
+  font-size: 0.68rem; color: var(--text-muted);
+  font-family: var(--font-mono);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 5px 9px;
+  white-space: nowrap;
+}
+
+/* ═══════════════════ CONFLUENCE HERO SECTION ═══════════════════ */
+.confluence-hero {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.confluence-gauge-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.cg-title {
+  font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-secondary);
+  width: 100%; text-align: center;
+}
+
+.cg-score-ring {
+  position: relative;
+  width: 140px; height: 140px;
+}
+
+.cg-ring-svg { transform: rotate(-90deg); }
+
+.cg-ring-track {
+  fill: none; stroke: var(--bg-hover);
+  stroke-width: 12; stroke-linecap: round;
+}
+
+.cg-ring-fill {
+  fill: none; stroke-width: 12; stroke-linecap: round;
+  transition: stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke 0.4s;
+}
+
+.cg-ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+
+.cg-score-num {
+  font-size: 2.2rem; font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1;
+  transition: color 0.4s;
+}
+
+.cg-score-denom {
+  font-size: 0.7rem; color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.cg-direction-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 14px; border-radius: 20px;
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+  border: 1px solid;
+}
+
+.cg-direction-badge.buy  { background: var(--accent-green-dim); color: var(--accent-green); border-color: rgba(0,208,132,0.3); }
+.cg-direction-badge.sell { background: var(--accent-red-dim);   color: var(--accent-red);   border-color: rgba(255,71,87,0.3); }
+.cg-direction-badge.neutral { background: var(--bg-hover); color: var(--text-secondary); border-color: var(--border-color); }
+
+.cg-strength {
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
+.cg-methods {
+  width: 100%;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+
+.cg-method-item {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.7rem;
+}
+
+.cg-method-name { color: var(--text-secondary); }
+.cg-method-pts  {
+  font-family: var(--font-mono); font-weight: 600; font-size: 0.68rem;
+  padding: 1px 6px; border-radius: 10px;
+  background: var(--bg-hover); color: var(--text-primary);
+}
+.cg-method-pts.buy  { background: var(--accent-green-dim); color: var(--accent-green); }
+.cg-method-pts.sell { background: var(--accent-red-dim);   color: var(--accent-red); }
+
+/* Breakdown Bars Card */
+.confluence-breakdown-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.cb-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cb-title {
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-secondary);
+}
+
+.cb-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+
+.cb-item {
+  display: grid;
+  grid-template-columns: 130px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+}
+
+.cb-label { font-size: 0.72rem; color: var(--text-secondary); }
+
+.cb-bar-track {
+  height: 6px; background: var(--bg-hover);
+  border-radius: 10px; overflow: hidden;
+  position: relative;
+}
+
+.cb-bar-fill {
+  height: 100%; border-radius: 10px;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+.cb-bar-fill.buy  { background: var(--accent-green); }
+.cb-bar-fill.sell { background: var(--accent-red); }
+.cb-bar-fill.neutral { background: var(--text-muted); }
+
+.cb-pts {
+  font-size: 0.7rem; font-family: var(--font-mono);
+  font-weight: 600; color: var(--text-primary);
+  text-align: right;
+}
+
+/* Trade Setup Card */
+.trade-setup-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.ts-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ts-title {
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-secondary);
+}
+
+.ts-body { padding: 16px 18px; }
+
+.ts-levels-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.ts-level {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 10px 8px;
+  text-align: center;
+  transition: border-color var(--transition);
+}
+
+.ts-level.entry { border-color: var(--accent-blue); background: var(--accent-blue-dim); }
+.ts-level.sl    { border-color: rgba(255,71,87,0.4); background: var(--accent-red-dim); }
+.ts-level.tp1   { border-color: rgba(0,208,132,0.2); background: rgba(0,208,132,0.04); }
+.ts-level.tp2   { border-color: rgba(0,208,132,0.3); background: rgba(0,208,132,0.06); }
+.ts-level.tp3   { border-color: rgba(0,208,132,0.4); background: rgba(0,208,132,0.08); }
+
+.ts-level-label {
+  font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+
+.ts-level-price {
+  font-size: 0.88rem; font-weight: 700;
+  font-family: var(--font-mono); color: var(--text-primary);
+}
+
+.ts-level.entry .ts-level-price { color: var(--accent-blue); }
+.ts-level.sl    .ts-level-price { color: var(--accent-red); }
+.ts-level.tp1 .ts-level-price,
+.ts-level.tp2 .ts-level-price,
+.ts-level.tp3 .ts-level-price  { color: var(--accent-green); }
+
+.ts-level-sub {
+  font-size: 0.62rem; color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.ts-rr-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.ts-rr-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: var(--radius-sm);
+  font-size: 0.7rem; font-weight: 600;
+  font-family: var(--font-mono);
+  background: var(--accent-green-dim);
+  color: var(--accent-green);
+  border: 1px solid rgba(0,208,132,0.2);
+}
+
+.ts-prob-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: var(--radius-sm);
+  font-size: 0.7rem; font-weight: 600;
+  background: var(--bg-hover); color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  margin-left: auto;
+}
+
+/* ═══════════════════ MAIN GRID 3 COLUMN ═══════════════════ */
+.analysis-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.analysis-full-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ═══════════════════ GENERIC ANALYSIS CARD ═══════════════════ */
+.an-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.an-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  gap: 8px;
+}
+
+.an-card-title {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.07em;
+}
+
+.an-card-icon {
+  width: 22px; height: 22px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.an-card-icon.green { background: var(--accent-green-dim); }
+.an-card-icon.blue  { background: var(--accent-blue-dim); }
+.an-card-icon.gold  { background: var(--accent-gold-dim); }
+.an-card-icon.red   { background: var(--accent-red-dim); }
+.an-card-icon.purple{ background: rgba(184,146,255,0.15); }
+.an-card-icon.orange{ background: rgba(255,159,67,0.15); }
+
+.an-card-badge {
+  font-size: 0.62rem; font-weight: 700; padding: 2px 7px;
+  border-radius: 10px; letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.an-card-badge.bullish { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(0,208,132,0.2); }
+.an-card-badge.bearish { background: var(--accent-red-dim);   color: var(--accent-red);   border: 1px solid rgba(255,71,87,0.2); }
+.an-card-badge.neutral { background: var(--bg-hover); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+.an-card-body { padding: 14px 16px; }
+
+/* ── Row item inside card ── */
+.an-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(48,54,61,0.5);
+  gap: 8px;
+}
+.an-row:last-child { border-bottom: none; }
+
+.an-row-label {
+  font-size: 0.72rem; color: var(--text-secondary);
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.an-row-val {
+  font-size: 0.72rem; font-family: var(--font-mono);
+  font-weight: 600; color: var(--text-primary);
+  text-align: right; flex-shrink: 0;
+}
+.an-row-val.green { color: var(--accent-green); }
+.an-row-val.red   { color: var(--accent-red); }
+.an-row-val.gold  { color: var(--accent-gold); }
+.an-row-val.blue  { color: var(--accent-blue); }
+.an-row-val.purple { color: var(--accent-purple); }
+
+/* ── Small badge inline ── */
+.an-badge {
+  display: inline-block; padding: 1px 6px; border-radius: 4px;
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em;
+}
+.an-badge.bull  { background: var(--accent-green-dim); color: var(--accent-green); }
+.an-badge.bear  { background: var(--accent-red-dim);   color: var(--accent-red); }
+.an-badge.neut  { background: var(--bg-hover); color: var(--text-secondary); }
+.an-badge.gold  { background: var(--accent-gold-dim); color: var(--accent-gold); }
+.an-badge.blue  { background: var(--accent-blue-dim); color: var(--accent-blue); }
+.an-badge.purple{ background: rgba(184,146,255,0.15); color: var(--accent-purple); }
+.an-badge.fresh { background: rgba(0,208,132,0.2); color: var(--accent-green); }
+.an-badge.tested{ background: rgba(255,215,0,0.15); color: var(--accent-gold); }
+.an-badge.warn  { background: rgba(255,159,67,0.15); color: var(--accent-orange); }
+
+/* ═══════════════════ MULTI-TIMEFRAME TABLE ═══════════════════ */
+.mtf-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.mtf-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mtf-title {
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-secondary);
+}
+
+.mtf-body { overflow-x: auto; }
+
+.mtf-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.mtf-table th {
+  padding: 9px 14px;
+  background: var(--bg-secondary);
+  font-size: 0.66rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-secondary); text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.mtf-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(48,54,61,0.5);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  transition: background var(--transition);
+}
+
+.mtf-table tbody tr:hover td { background: var(--bg-hover); }
+.mtf-table tbody tr:last-child td { border-bottom: none; }
+
+.mtf-tf-label {
+  font-size: 0.7rem; font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+.mtf-signal-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  display: inline-block; margin-right: 6px;
+}
+.mtf-signal-dot.buy { background: var(--accent-green); box-shadow: 0 0 6px rgba(0,208,132,0.5); }
+.mtf-signal-dot.sell{ background: var(--accent-red);   box-shadow: 0 0 6px rgba(255,71,87,0.5); }
+.mtf-signal-dot.neutral { background: var(--text-muted); }
+
+.mtf-conf-bar {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.68rem;
+}
+.mtf-conf-track {
+  width: 50px; height: 4px;
+  background: var(--bg-hover); border-radius: 10px; overflow: hidden;
+}
+.mtf-conf-fill {
+  height: 100%; border-radius: 10px;
+  transition: width 0.6s;
+}
+.mtf-conf-fill.buy  { background: var(--accent-green); }
+.mtf-conf-fill.sell { background: var(--accent-red); }
+.mtf-conf-fill.neutral { background: var(--text-muted); }
+
+.mtf-no-data {
+  color: var(--text-muted); font-size: 0.68rem; font-family: var(--font-sans);
+}
+
+/* ═══════════════════ INDICATOR SUMMARY TABLE ═══════════════════ */
+.indsum-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.indsum-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap; gap: 8px;
+}
+
+.indsum-title {
+  font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-secondary);
+}
+
+.indsum-overall {
+  display: flex; align-items: center; gap: 8px;
+}
+
+.indsum-dir {
+  font-size: 0.78rem; font-weight: 700;
+  font-family: var(--font-mono); padding: 3px 10px;
+  border-radius: var(--radius-sm);
+}
+.indsum-dir.strong-buy  { background: var(--accent-green); color: #0d1117; }
+.indsum-dir.buy         { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(0,208,132,0.3); }
+.indsum-dir.strong-sell { background: var(--accent-red); color: #fff; }
+.indsum-dir.sell        { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(255,71,87,0.3); }
+.indsum-dir.neutral     { background: var(--bg-hover); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+.indsum-tabs {
+  display: flex; border-bottom: 1px solid var(--border-color);
+}
+
+.indsum-tab {
+  flex: 1; padding: 9px 12px; font-size: 0.72rem; font-weight: 500;
+  color: var(--text-secondary); border: none; background: none;
+  cursor: pointer; transition: all var(--transition);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.indsum-tab.active { color: var(--accent-green); border-bottom-color: var(--accent-green); }
+.indsum-tab:hover:not(.active) { color: var(--text-primary); background: var(--bg-hover); }
+
+.indsum-tab-content { display: none; }
+.indsum-tab-content.active { display: block; }
+
+.indsum-row {
+  display: flex; align-items: center;
+  padding: 8px 18px; gap: 10px;
+  border-bottom: 1px solid rgba(48,54,61,0.5);
+  transition: background var(--transition);
+}
+.indsum-row:hover { background: var(--bg-hover); }
+.indsum-row:last-child { border-bottom: none; }
+
+.indsig-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.indsig-dot.BUY   { background: var(--accent-green); }
+.indsig-dot.SELL  { background: var(--accent-red); }
+.indsig-dot.NEUTRAL { background: var(--text-muted); }
+
+.indsig-name {
+  flex: 1; font-size: 0.73rem; color: var(--text-primary);
+}
+
+.indsig-val {
+  font-size: 0.68rem; font-family: var(--font-mono);
+  color: var(--text-muted); max-width: 120px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+.indsig-badge {
+  font-size: 0.62rem; font-weight: 700;
+  padding: 2px 7px; border-radius: 10px; letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.indsig-badge.BUY     { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid rgba(0,208,132,0.2); }
+.indsig-badge.SELL    { background: var(--accent-red-dim);   color: var(--accent-red);   border: 1px solid rgba(255,71,87,0.2); }
+.indsig-badge.NEUTRAL { background: var(--bg-hover); color: var(--text-secondary); border: 1px solid var(--border-color); }
+
+.indsig-note {
+  font-size: 0.65rem; color: var(--text-muted); font-family: var(--font-sans);
+}
+
+.indsig-count-bar {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px; padding: 12px 18px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.indsig-count {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.indsig-count-num { font-size: 1.1rem; font-weight: 700; font-family: var(--font-mono); }
+.indsig-count-lbl { font-size: 0.62rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* OB / FVG / Pattern List */
+.an-zone-list { display: flex; flex-direction: column; gap: 6px; }
+
+.an-zone-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  transition: border-color var(--transition);
+}
+.an-zone-item:hover { border-color: var(--border-bright); }
+.an-zone-item.bull { border-left: 2px solid var(--accent-green); }
+.an-zone-item.bear { border-left: 2px solid var(--accent-red); }
+.an-zone-item.gold { border-left: 2px solid var(--accent-gold); }
+
+.an-zone-type {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em;
+  padding: 2px 6px; border-radius: 4px;
+  white-space: nowrap;
+}
+.an-zone-type.bull { background: var(--accent-green-dim); color: var(--accent-green); }
+.an-zone-type.bear { background: var(--accent-red-dim);   color: var(--accent-red); }
+.an-zone-type.gold { background: var(--accent-gold-dim);  color: var(--accent-gold); }
+
+.an-zone-range {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.an-zone-high { font-size: 0.7rem; font-family: var(--font-mono); color: var(--accent-green); }
+.an-zone-low  { font-size: 0.7rem; font-family: var(--font-mono); color: var(--accent-red); }
+.an-zone-label { font-size: 0.66rem; color: var(--text-muted); font-family: var(--font-sans); }
+
+.an-zone-status { text-align: right; }
+
+/* Fib table */
+.fib-table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+.fib-table td { padding: 5px 8px; border-bottom: 1px solid rgba(48,54,61,0.5); }
+.fib-table tr:last-child td { border-bottom: none; }
+.fib-table td:first-child { color: var(--text-secondary); }
+.fib-table td:nth-child(2) { font-family: var(--font-mono); color: var(--text-primary); }
+.fib-table td:last-child { text-align: right; }
+.fib-gp { background: rgba(255,159,67,0.08); }
+.fib-gp td:first-child { color: var(--accent-orange); font-weight: 600; }
+
+/* Wyckoff visual */
+.wyckoff-phases {
+  display: flex; gap: 3px; margin-bottom: 10px;
+}
+.wyckoff-phase-btn {
+  flex: 1; padding: 5px 4px; text-align: center;
+  font-size: 0.62rem; font-weight: 600; letter-spacing: 0.04em;
+  border-radius: var(--radius-sm); background: var(--bg-secondary);
+  border: 1px solid var(--border-color); color: var(--text-muted);
+  transition: all var(--transition); cursor: default;
+}
+.wyckoff-phase-btn.active-acc { background: var(--accent-green-dim); color: var(--accent-green); border-color: rgba(0,208,132,0.3); }
+.wyckoff-phase-btn.active-mark { background: var(--accent-blue-dim); color: var(--accent-blue); border-color: rgba(77,171,247,0.3); }
+.wyckoff-phase-btn.active-dist { background: var(--accent-red-dim); color: var(--accent-red); border-color: rgba(255,71,87,0.3); }
+.wyckoff-phase-btn.active-mdown { background: rgba(255,159,67,0.15); color: var(--accent-orange); border-color: rgba(255,159,67,0.3); }
+
+/* Harmonic pattern card */
+.harmonic-pattern-item {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 10px; background: var(--bg-secondary);
+  border: 1px solid var(--border-color); border-radius: var(--radius);
+  margin-bottom: 6px; transition: border-color var(--transition);
+}
+.harmonic-pattern-item:last-child { margin-bottom: 0; }
+.harmonic-pattern-item:hover { border-color: var(--border-bright); }
+
+.hp-row { display: flex; align-items: center; justify-content: space-between; }
+.hp-name { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); }
+.hp-ratios { display: flex; gap: 6px; flex-wrap: wrap; }
+.hp-ratio {
+  font-size: 0.6rem; font-family: var(--font-mono);
+  padding: 1px 5px; border-radius: 4px;
+  background: var(--bg-hover); color: var(--text-secondary);
+}
+
+/* Candle Pattern List */
+.cp-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 0; border-bottom: 1px solid rgba(48,54,61,0.5);
+}
+.cp-item:last-child { border-bottom: none; }
+.cp-name { flex: 1; font-size: 0.73rem; color: var(--text-primary); }
+.cp-acc  { font-size: 0.68rem; font-family: var(--font-mono); color: var(--text-muted); }
+
+/* ICT Killzone status bar */
+.kz-bar {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.kz-item {
+  flex: 1; min-width: 60px; padding: 7px 8px; text-align: center;
+  border-radius: var(--radius-sm); border: 1px solid var(--border-color);
+  background: var(--bg-secondary); font-size: 0.66rem; font-weight: 600;
+  color: var(--text-muted); transition: all var(--transition);
+}
+.kz-item.active {
+  background: rgba(255,215,0,0.1); color: var(--accent-gold);
+  border-color: rgba(255,215,0,0.3);
+  box-shadow: 0 0 8px rgba(255,215,0,0.1);
+}
+
+/* Progress confidence bar */
+.conf-progress {
+  display: flex; align-items: center; gap: 8px;
+}
+.conf-progress-track {
+  flex: 1; height: 5px; background: var(--bg-hover);
+  border-radius: 10px; overflow: hidden;
+}
+.conf-progress-fill {
+  height: 100%; border-radius: 10px;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* AMD Phase chip */
+.amd-phase {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: var(--radius);
+  font-size: 0.72rem; font-weight: 600;
+  border: 1px solid;
+}
+
+/* Empty state for cards */
+.an-empty {
+  padding: 16px; text-align: center;
+  color: var(--text-muted); font-size: 0.72rem;
+}
+
+/* Loading spinner inside card */
+.an-loading {
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; gap: 8px; color: var(--text-muted); font-size: 0.75rem;
+}
+.an-spinner {
+  width: 16px; height: 16px; border: 2px solid var(--border-color);
+  border-top-color: var(--accent-green); border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* No-data notice */
+.an-nodata-notice {
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 0.72rem; color: var(--text-muted);
+  display: flex; align-items: center; gap: 7px;
+}
+
+/* ═══════════════════ RESPONSIVE ═══════════════════ */
+@media (max-width: 1200px) {
+  .analysis-main-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 900px) {
+  .confluence-hero { grid-template-columns: 1fr; }
+  .analysis-main-grid { grid-template-columns: 1fr; }
+  .analysis-full-grid { grid-template-columns: 1fr; }
+  .ts-levels-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .ts-levels-grid { grid-template-columns: repeat(2, 1fr); }
+  .cb-item { grid-template-columns: 110px 1fr 35px; }
+}
+
+/* ═══════════════════ POSITION SIZE CALCULATOR — Low/Med/High grid ═══════════════════ */
+.ts-lot-triple-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .ts-lot-triple-grid { grid-template-columns: 1fr; gap: 10px; }
+}
+
+
+.ts-export-btn {
+  width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 14px; margin-bottom: 10px;
+  background: var(--bg-hover); border: 1px solid var(--border-color); border-radius: var(--radius-sm);
+  color: var(--text-primary); font-family: var(--font-sans); font-weight: 600; font-size: 0.8rem;
+  cursor: pointer; transition: all var(--transition);
+}
+.ts-export-btn:hover { background: var(--accent-gold-dim); border-color: var(--accent-gold); color: var(--accent-gold); }
+.ts-export-pro-pill {
+  display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 100px;
+  background: var(--accent-gold); color: #0d1117; font-family: var(--font-mono); font-size: 0.6rem;
+  font-weight: 800; letter-spacing: 0.05em;
+}
+</style>
+
+<!-- ═══════════════════════ HTML CONTENT ═══════════════════════ -->
+<div class="analysis-page" id="analysis-page">
+
+  <!-- ══ MODAL PANEL — di atas segalanya ══ -->
+  <div id="an-modal-panel" style="
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  ">
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="4" width="13" height="9" rx="2" stroke="var(--accent-gold)" stroke-width="1.3"/><path d="M5 4V3a2 2 0 014 0v1" stroke="var(--accent-gold)" stroke-width="1.3"/><circle cx="7.5" cy="9" r="1.5" fill="var(--accent-gold)"/></svg>
+      <span style="font-size:0.72rem;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--accent-gold)">Modal Trading</span>
+    </div>
+
+    <!-- Input Modal -->
+    <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:180px">
+      <div style="position:relative;flex:1;max-width:200px">
+        <span id="an-modal-prefix" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:0.78rem;font-weight:700;color:var(--text-secondary);font-family:var(--font-mono);pointer-events:none">$</span>
+        <input type="number" id="an-modal-amount" value="1000" min="0" step="10"
+          style="width:100%;padding:7px 9px 7px 22px;background:var(--bg-input);border:1px solid var(--accent-gold);border-radius:6px;color:var(--text-primary);font-family:var(--font-mono);font-size:0.85rem;font-weight:700"
+          oninput="anModalChanged()" />
+      </div>
+      <!-- Toggle USD/IDR -->
+      <div style="display:flex;border:1px solid var(--border-color);border-radius:6px;overflow:hidden;flex-shrink:0">
+        <button id="an-modal-usd-btn" onclick="anSetModalCurrency('usd')"
+          style="padding:7px 12px;font-size:0.72rem;font-weight:700;border:none;cursor:pointer;transition:all 0.15s;background:var(--accent-gold);color:#0d1117">USD</button>
+        <button id="an-modal-idr-btn" onclick="anSetModalCurrency('idr')"
+          style="padding:7px 12px;font-size:0.72rem;font-weight:700;border:none;cursor:pointer;transition:all 0.15s;background:var(--bg-hover);color:var(--text-secondary)">IDR</button>
+      </div>
+    </div>
+
+    <!-- Kurs input -->
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+      <span style="font-size:0.68rem;color:var(--text-muted)">Kurs</span>
+      <input type="number" id="an-modal-kurs" value="16200" min="1000" step="100"
+        style="width:90px;padding:6px 8px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-family:var(--font-mono);font-size:0.75rem"
+        oninput="anModalChanged()" />
+      <span style="font-size:0.68rem;color:var(--text-muted)">IDR/USD</span>
+    </div>
+
+    <!-- Tampilkan ekuivalen -->
+    <div id="an-modal-equiv" style="font-size:0.72rem;color:var(--text-secondary);font-family:var(--font-mono);background:var(--bg-secondary);padding:5px 10px;border-radius:5px;flex-shrink:0">
+      ≈ Rp 16.200.000
+    </div>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div class="analysis-header">
+    <div class="analysis-title-block">
+      <h1 class="analysis-page-title">Advanced Analysis</h1>
+      <div class="analysis-page-sub" id="an-subtitle">SMC · ICT · Fibonacci · Elliott · Wyckoff · Harmonic</div>
+    </div>
+    <div class="analysis-controls">
+      <select class="an-sym-select" id="an-sym-select" onchange="anUpdateSymbol()"></select>
+      <select class="an-tf-select" id="an-tf-select" onchange="anUpdateTF()"></select>
+      <button class="btn-analyze" id="btn-analyze" onclick="anRunAnalysis()">
+        <svg class="btn-analyze-icon" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1C3.69 1 1 3.69 1 7C1 10.31 3.69 13 7 13C10.31 13 13 10.31 13 7C13 3.69 10.31 1 7 1Z" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M9 7L6 5V9L9 7Z" fill="currentColor"/>
+        </svg>
+        Analisis
+      </button>
+      <div class="an-lastupdate" id="an-lastupdate">—</div>
+    </div>
+  </div>
+
+  <!-- ══ CONFLUENCE HERO ══ -->
+  <div class="confluence-hero">
+
+    <!-- Gauge Ring -->
+    <div class="confluence-gauge-card">
+      <div class="cg-title">Est.nilai Data</div>
+      <div class="cg-score-ring">
+        <svg class="cg-ring-svg" width="140" height="140" viewBox="0 0 140 140">
+          <circle class="cg-ring-track" cx="70" cy="70" r="56"/>
+          <circle class="cg-ring-fill" id="cg-ring-fill" cx="70" cy="70" r="56"
+            stroke-dasharray="352" stroke-dashoffset="352"/>
+        </svg>
+        <div class="cg-ring-center">
+          <span class="cg-score-num" id="cg-score-num">—</span>
+          <span class="cg-score-denom">/ 20</span>
+        </div>
+      </div>
+      <div class="cg-direction-badge neutral" id="cg-dir-badge">
+        <span id="cg-dir-icon">◈</span>
+        <span id="cg-dir-text">MENUNGGU</span>
+      </div>
+      <div class="cg-strength" id="cg-strength">BELUM DIANALISIS</div>
+
+      <div class="cg-methods" id="cg-methods-list">
+        <div style="font-size:0.68rem;color:var(--text-muted);text-align:center;padding:8px 0">
+          Klik Analisis untuk memulai
+        </div>
+      </div>
+    </div>
+
+    <!-- Breakdown Bars -->
+    <div class="confluence-breakdown-card">
+      <div class="cb-header">
+        <span class="cb-title">Breakdown Konfluensi</span>
+        <span class="an-badge neut" id="cb-total-badge">0 pts aktif</span>
+      </div>
+      <div class="cb-body" id="cb-body">
+        <!-- Rendered by JS -->
+        <div class="an-loading"><div class="an-spinner"></div> Menunggu analisis...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TRADE SETUP ══ -->
+  <div class="trade-setup-card" id="trade-setup-card">
+    <div class="ts-header">
+      <span class="ts-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:5px">
+          <path d="M7 1L8.5 5.5H13L9.5 8L11 12.5L7 9.5L3 12.5L4.5 8L1 5.5H5.5L7 1Z" stroke="var(--accent-gold)" stroke-width="1.2" stroke-linejoin="round"/>
+        </svg>
+        Trade Setup Rekomendasi
+      </span>
+      <span class="an-badge neut" id="ts-prob-label">Probability: —</span>
+    </div>
+    <div class="ts-body">
+      <div class="ts-levels-grid" id="ts-levels-grid">
+        <div class="ts-level entry"><div class="ts-level-label">ENTRY</div><div class="ts-level-price" id="ts-entry">—</div><div class="ts-level-sub">Harga masuk</div></div>
+        <div class="ts-level sl"><div class="ts-level-label">STOP LOSS</div><div class="ts-level-price" id="ts-sl">—</div><div class="ts-level-sub" id="ts-sl-pips">— pips</div></div>
+        <div class="ts-level tp1"><div class="ts-level-label">TP 1</div><div class="ts-level-price" id="ts-tp1">—</div><div class="ts-level-sub" id="ts-tp1-pips">RR 1:1</div></div>
+        <div class="ts-level tp2"><div class="ts-level-label">TP 2</div><div class="ts-level-price" id="ts-tp2">—</div><div class="ts-level-sub" id="ts-tp2-pips">RR 1:2</div></div>
+        <div class="ts-level tp3"><div class="ts-level-label">TP 3</div><div class="ts-level-price" id="ts-tp3">—</div><div class="ts-level-sub" id="ts-tp3-pips">RR 1:4</div></div>
+      </div>
+
+      <div class="ts-rr-row" id="ts-rr-row">
+        <span class="an-badge neut">Belum ada setup — klik Analisis</span>
+      </div>
+
+      <!-- ── EXPORT ANNOTATED CHART — fitur khusus Premium ── -->
+      <button type="button" id="ts-export-btn" class="ts-export-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v8M4 6l3 3 3-3M2 11.5h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="ts-export-btn-label">Unduh Analisis Chart</span>
+        <span class="ts-export-pro-pill" id="ts-export-pro-pill">PRO</span>
+      </button>
+
+      <!-- ── Harga Broker/TradingView (khusus XAU) — live dari gold-api.com, bukan hardcode ── -->
+      <div id="ts-tv-row" style="
+        background: rgba(77,171,247,0.06);
+        border: 1px solid rgba(77,171,247,0.25);
+        border-radius: var(--radius);
+        padding: 9px 12px;
+        margin-bottom: 10px;
+        display: none;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;">
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <rect x="1" y="1" width="11" height="11" rx="2" stroke="var(--accent-blue)" stroke-width="1.2"/>
+            <path d="M3 9.5L5.5 7L7.5 9L10 5" stroke="var(--accent-blue)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span style="font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--accent-blue)">Harga Broker (Live)</span>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-left:4px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:0.6rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted)">ENTRY</span>
+            <span id="ts-tv-entry" style="font-size:0.9rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-blue)">—</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:0.6rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted)">SL</span>
+            <span id="ts-tv-sl" style="font-size:0.9rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-red)">—</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:0.6rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted)">TP 1</span>
+            <span id="ts-tv-tp1" style="font-size:0.9rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-green)">—</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:0.6rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted)">TP 2</span>
+            <span id="ts-tv-tp2" style="font-size:0.9rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-green)">—</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+            <span style="font-size:0.6rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted)">TP 3</span>
+            <span id="ts-tv-tp3" style="font-size:0.9rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-green)">—</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;border-left:1px solid var(--border-color);padding-left:16px">
+            <div style="display:flex;align-items:center;gap:4px">
+              <span style="font-size:0.6rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted)">SELISIH</span>
+              <!-- Badge AUTO/MANUAL — ditampilkan oleh JS -->
+              <span id="ts-tv-offset-mode-badge" style="font-size:0.52rem;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;padding:1px 4px;border-radius:3px;background:rgba(0,208,132,0.15);color:#00d084;display:none">AUTO</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px">
+              <span id="ts-tv-offset" style="font-size:0.82rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-blue)">—</span>
+              <button id="ts-tv-offset-edit-btn" type="button" title="Override selisih manual (matikan auto)" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:2px;display:flex">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7.5 1.5L9.5 3.5L3.5 9.5L1 10L1.5 7.5L7.5 1.5Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div id="ts-tv-offset-edit-row" style="display:none;align-items:center;gap:6px;width:100%;margin-top:6px;padding-top:8px;border-top:1px solid rgba(77,171,247,0.2)">
+          <span style="font-size:0.68rem;color:var(--text-secondary);font-family:var(--font-sans)">Override selisih manual (TradingView − Binance):</span>
+          <input type="number" step="0.01" id="ts-tv-offset-input" style="width:80px;padding:5px 7px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:5px;color:var(--text-primary);font-family:var(--font-mono);font-size:0.78rem" />
+          <button id="ts-tv-offset-save-btn" type="button" style="padding:5px 10px;background:var(--accent-blue);color:#0d1117;border:none;border-radius:5px;font-family:var(--font-sans);font-weight:700;font-size:0.72rem;cursor:pointer">Simpan</button>
+          <button id="ts-tv-offset-cancel-btn" type="button" style="padding:5px 10px;background:var(--bg-hover);color:var(--text-secondary);border:1px solid var(--border-color);border-radius:5px;font-family:var(--font-sans);font-size:0.72rem;cursor:pointer">Batal</button>
+          <button id="ts-tv-offset-reset-btn" type="button" title="Kembali ke mode auto (hitung selisih live dari Twelve Data)" style="padding:5px 10px;background:rgba(0,208,132,0.12);color:#00d084;border:1px solid rgba(0,208,132,0.3);border-radius:5px;font-family:var(--font-sans);font-size:0.72rem;cursor:pointer">↺ Reset ke Auto</button>
+        </div>
+      </div>
+
+      <!-- ── ENTRY STATUS — real-time, update otomatis tiap harga berubah ── -->
+      <div id="ts-entry-status" style="display:none;margin-top:10px;padding:10px 12px;border-radius:var(--radius);align-items:center;gap:10px;"></div>
+
+      <!-- ── KALKULATOR POSITION SIZE / LOT ── -->
+      <div id="ts-lot-calc" style="display:block;margin-top:10px;border-radius:var(--radius);border:1px solid var(--border-color);overflow:hidden">
+
+        <!-- Header kalkulator -->
+        <div style="display:flex;align-items:center;gap:6px;padding:10px 13px;background:var(--bg-secondary);border-bottom:1px solid var(--border-color)">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="3" width="11" height="8" rx="1.5" stroke="var(--text-secondary)" stroke-width="1.1"/><path d="M1 5.5h11" stroke="var(--text-secondary)" stroke-width="1.1"/></svg>
+          <span style="font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-secondary)">Disiplin Set-Up</span>
+          <span style="font-size:0.62rem;color:var(--text-muted);margin-left:2px">· FINANCE ADVICE</span>
+        </div>
+
+        <!-- Toggle Single / Triple — full-width, sama rata kiri-kanan -->
+        <div id="ts-lot-mode-toggle" style="display:flex;border-bottom:1px solid var(--border-color)">
+          <button id="ts-lot-mode-single" onclick="anSetLotMode('single')"
+            style="flex:1;padding:9px 8px;font-size:0.7rem;font-weight:700;border:none;cursor:pointer;transition:all 0.15s;background:var(--accent-blue);color:#0d1117;letter-spacing:0.03em;text-align:center">
+            Rekomendasi Disiplin
+          </button>
+          <button id="ts-lot-mode-triple" onclick="anSetLotMode('triple')"
+            style="flex:1;padding:9px 8px;font-size:0.7rem;font-weight:700;border:none;cursor:pointer;transition:all 0.15s;background:var(--bg-hover);color:var(--text-secondary);letter-spacing:0.03em;text-align:center">
+            Multiple No Risk No Rich
+          </button>
+        </div>
+
+        <!-- Hasil kalkulasi -->
+        <div id="ts-lot-result" style="padding:12px 13px;font-family:var(--font-sans);font-size:0.8rem;color:var(--text-primary)"></div>
+
+        <div style="padding:0 13px 10px;font-size:0.63rem;color:var(--text-muted);line-height:1.4">
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 3-COLUMN MAIN GRID ══ -->
+  <div class="analysis-main-grid">
+
+    <!-- SMC Card -->
+    <div class="an-card">
+      <div class="an-card-header">
+        <div class="an-card-title">
+          <div class="an-card-icon green">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="7" width="4" height="5" rx="1" fill="var(--accent-green)" opacity="0.8"/><rect x="5.5" y="4" width="3" height="8" rx="1" fill="var(--accent-green)"/><rect x="9" y="1.5" width="3" height="10.5" rx="1" fill="var(--accent-green)" opacity="0.6"/></svg>
+          </div>
+          Smart Money Concepts
+        </div>
+        <span class="an-card-badge neutral" id="smc-trend-badge">—</span>
+      </div>
+      <div class="an-card-body" id="smc-body">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- ICT Card -->
+    <div class="an-card">
+      <div class="an-card-header">
+        <div class="an-card-title">
+          <div class="an-card-icon blue">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="var(--accent-blue)" stroke-width="1.2"/><line x1="6.5" y1="2.5" x2="6.5" y2="6.5" stroke="var(--accent-blue)" stroke-width="1.2" stroke-linecap="round"/><line x1="6.5" y1="6.5" x2="9" y2="8" stroke="var(--accent-blue)" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          ICT Concepts
+        </div>
+        <span class="an-card-badge neutral" id="ict-kz-badge">—</span>
+      </div>
+      <div class="an-card-body" id="ict-body">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Fibonacci Card -->
+    <div class="an-card">
+      <div class="an-card-header">
+        <div class="an-card-title">
+          <div class="an-card-icon gold">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 11C2 7.5 5 7 6.5 7C8 7 11 6 11 2" stroke="var(--accent-gold)" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="7" r="1" fill="var(--accent-gold)"/></svg>
+          </div>
+          Fibonacci
+        </div>
+        <span class="an-card-badge neutral" id="fib-trend-badge">—</span>
+      </div>
+      <div class="an-card-body" id="fib-body">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Order Blocks Card -->
+    <div class="an-card">
+      <div class="an-card-header">
+        <div class="an-card-title">
+          <div class="an-card-icon purple">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="4" width="11" height="5" rx="1" stroke="var(--accent-purple)" stroke-width="1.2"/><line x1="1" y1="6.5" x2="12" y2="6.5" stroke="var(--accent-purple)" stroke-width="0.8" stroke-dasharray="2 2"/></svg>
+          </div>
+          Order Blocks
+        </div>
+        <span class="an-badge blue" id="ob-count-badge">0 aktif</span>
+      </div>
+      <div class="an-card-body" id="ob-body">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- FVG + Supply/Demand -->
+    <div class="an-card">
+      <div class="an-card-header">
+        <div class="an-card-title">
+          <div class="an-card-icon orange">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="1.5" width="11" height="3" rx="1" fill="var(--accent-orange)" opacity="0.6"/><rect x="1" y="8.5" width="11" height="3" rx="1" fill="var(--accent-orange)" opacity="0.6"/><line x1="4" y1="5" x2="9" y2="8.5" stroke="var(--accent-orange)" stroke-width="0.8" stroke-dasharray="2 2"/></svg>
+          </div>
+          FVG & Supply/Demand
+        </div>
+        <span class="an-badge neut" id="fvg-count-badge">0 FVG</span>
+      </div>
+      <div class="an-card-body" id="fvg-body">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Candle Patterns Card -->
+    <div class="an-card">
+      <div class="an-card-header">
+        <div class="an-card-title">
+          <div class="an-card-icon red">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="3" y="3" width="3" height="7" rx="0.5" fill="var(--accent-green)"/><line x1="4.5" y1="1.5" x2="4.5" y2="3" stroke="var(--accent-green)" stroke-width="1"/><line x1="4.5" y1="10" x2="4.5" y2="11.5" stroke="var(--accent-green)" stroke-width="1"/><rect x="7" y="2" width="3" height="8" rx="0.5" fill="var(--accent-red)"/><line x1="8.5" y1="1" x2="8.5" y2="2" stroke="var(--accent-red)" stroke-width="1"/><line x1="8.5" y1="10" x2="8.5" y2="12" stroke="var(--accent-red)" stroke-width="1"/></svg>
+          </div>
+          Price Action
+        </div>
+        <span class="an-badge neut" id="cp-count-badge">0 pattern</span>
+      </div>
+      <div class="an-card-body" id="cp-body">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+
+  </div><!-- /analysis-main-grid -->
+
+  <!-- ══ ELLIOTT + WYCKOFF + HARMONIC ROW ══ -->
+  <div class="analysis-full-grid">
+
+    <!-- Elliott Wave -->
+    <div class="an-card">
+      <div class="an-card-header">
+        <div class="an-card-title">
+          <div class="an-card-icon blue">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><polyline points="1,10 3,6 5,8 7,3 9,5 11,2 13,5" stroke="var(--accent-blue)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </div>
+          Elliott Wave
+        </div>
+        <span class="an-card-badge neutral" id="ew-badge">—</span>
+      </div>
+      <div class="an-card-body" id="ew-body">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Wyckoff -->
+    <div class="an-card">
+      <div class="an-card-header">
+        <div class="an-card-title">
+          <div class="an-card-icon gold">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 10C3 10 3 3 5 3C7 3 7 10 9 10C11 10 11 6 13 6" stroke="var(--accent-gold)" stroke-width="1.2" stroke-linecap="round" fill="none"/></svg>
+          </div>
+          Wyckoff Method
+        </div>
+        <span class="an-card-badge neutral" id="wyckoff-badge">—</span>
+      </div>
+      <div class="an-card-body" id="wyckoff-body">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Harmonic Patterns -->
+    <div class="an-card">
+      <div class="an-card-header">
+        <div class="an-card-title">
+          <div class="an-card-icon purple">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1 11L5 3L6.5 7L8 5L10 9L12 5" stroke="var(--accent-purple)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+          </div>
+          Harmonic Patterns
+        </div>
+        <span class="an-badge purple" id="harm-count-badge">0 pattern</span>
+      </div>
+      <div class="an-card-body" id="harm-body">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- Market Structure Summary -->
+    <div class="an-card">
+      <div class="an-card-header">
+        <div class="an-card-title">
+          <div class="an-card-icon green">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><polyline points="1,10 4,6 7,8 10,4 12,5" stroke="var(--accent-green)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="1" y1="12" x2="12" y2="12" stroke="var(--text-muted)" stroke-width="0.8"/></svg>
+          </div>
+          Market Structure
+        </div>
+        <span class="an-card-badge neutral" id="ms-badge">—</span>
+      </div>
+      <div class="an-card-body" id="ms-body">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+
+  </div><!-- /analysis-full-grid -->
+
+  <!-- ══ MULTI-TIMEFRAME TABLE ══ -->
+  <div class="mtf-card">
+    <div class="mtf-header">
+      <span class="mtf-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:5px;vertical-align:middle">
+          <rect x="1" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+          <line x1="4.5" y1="4" x2="4.5" y2="1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="9.5" y1="4" x2="9.5" y2="1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="1" y1="7.5" x2="13" y2="7.5" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+        </svg>
+        Multi-Timeframe Analysis
+      </span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="an-badge neut" id="mtf-align-badge">Alignment: —</span>
+        <span class="an-badge neut" id="mtf-bias-badge">Bias: —</span>
+      </div>
+    </div>
+    <div class="mtf-body">
+      <table class="mtf-table">
+        <thead>
+          <tr>
+            <th>TF</th>
+            <th>Trend</th>
+            <th>Signal</th>
+            <th>Confluence</th>
+            <th>SMC PD</th>
+            <th>Fib Trend</th>
+            <th>RSI</th>
+            <th>MACD</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody id="mtf-tbody">
+          <tr><td colspan="9" class="an-loading"><div class="an-spinner"></div>&nbsp;Menunggu analisis...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="padding:10px 18px;border-top:1px solid var(--border-color);background:var(--bg-secondary)">
+      <div style="font-size:0.68rem;color:var(--text-muted)" id="mtf-recommendation">
+        Pilih instrumen dan klik Analisis untuk melihat MTF.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ INDICATOR SUMMARY ══ -->
+  <div class="indsum-card">
+    <div class="indsum-header">
+      <span class="indsum-title">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-right:5px;vertical-align:middle">
+          <polyline points="1,11 4,7 7,9 10,4 13,6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="1" y1="13" x2="13" y2="13" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+        </svg>
+        Indicator Summary
+      </span>
+      <div class="indsum-overall">
+        <div class="indsum-dir neutral" id="indsum-dir">NEUTRAL</div>
+        <span style="font-size:0.68rem;color:var(--text-muted)" id="indsum-score">Score: 0</span>
+      </div>
+    </div>
+    <div class="indsim-tab-wrap">
+      <div class="indsum-tabs">
+        <button class="indsum-tab active" onclick="anSwitchIndTab('trend', this)">Trend</button>
+        <button class="indsum-tab" onclick="anSwitchIndTab('momentum', this)">Momentum</button>
+        <button class="indsum-tab" onclick="anSwitchIndTab('volume', this)">Volume</button>
+        <button class="indsum-tab" onclick="anSwitchIndTab('volatility', this)">Volatility</button>
+      </div>
+
+      <div class="indsig-count-bar" id="indsig-count-bar-trend">
+        <div class="indsig-count"><span class="indsig-count-num text-green" id="indsig-trend-buy">0</span><span class="indsig-count-lbl">Buy</span></div>
+        <div class="indsig-count"><span class="indsig-count-num text-muted"  id="indsig-trend-neu">0</span><span class="indsig-count-lbl">Neutral</span></div>
+        <div class="indsig-count"><span class="indsig-count-num text-red"    id="indsig-trend-sell">0</span><span class="indsig-count-lbl">Sell</span></div>
+      </div>
+
+      <div class="indsum-tab-content active" id="ind-tab-trend">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+      <div class="indsum-tab-content" id="ind-tab-momentum">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+      <div class="indsum-tab-content" id="ind-tab-volume">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+      <div class="indsum-tab-content" id="ind-tab-volatility">
+        <div class="an-loading"><div class="an-spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /analysis-page -->
+
+<!-- ════════════════════════ JAVASCRIPT CONTROLLER ════════════════════════ -->
+<script>
+(function() {
+'use strict';
+
+/* ─── STATE ─── */
+let _anSymbol    = (window.AppState && window.AppState.selectedInstrument) || 'BTCUSDT';
+let _anTF        = (window.AppState && window.AppState.selectedTimeframe)  || 'H1';
+let _anRunning   = false;
+let _anLastResult= null;
+
+/* ─── HELPERS ─── */
+function _fmt(v, d=5) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  return parseFloat(v).toFixed(d);
+}
+function _fmtPrice(v, sym) {
+  if (v === null || v === undefined || isNaN(v)) return '—';
+  const d = sym && sym.includes('JPY') ? 3 : sym && sym.endsWith('USDT') ? 2 : 5;
+  return parseFloat(v).toFixed(d);
+}
+function _el(id) { return document.getElementById(id); }
+function _getOHLCV(sym, tf) {
+  const s = window.AppState;
+  if (!s || !s.ohlcv) return null;
+  return s.ohlcv[`${sym}_${tf}`] || null;
+}
+
+/* ─── BUILD SYMBOL LIST ─── */
+function anBuildSymbolList() {
+  const sel = _el('an-sym-select');
+  if (!sel) return;
+  const cfg = window.CONFIG;
+  const opts = [];
+  const cryptos = (cfg && cfg.CRYPTO_SYMBOLS) || [];
+  const metals  = (cfg && cfg.METAL_SYMBOLS) || [];
+  const forex   = (cfg && cfg.FOREX_PAIRS) || [];
+  const stocks  = (cfg && cfg.STOCK_SYMBOLS) || [];
+  if (cryptos.length) {
+    const og = document.createElement('optgroup');
+    og.label = 'Crypto';
+    cryptos.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.symbol; o.textContent = c.display || c.symbol;
+      if (c.symbol === _anSymbol) o.selected = true;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  }
+  if (metals.length) {
+    const og = document.createElement('optgroup');
+    og.label = 'Metals';
+    metals.forEach(m => {
+      const o = document.createElement('option');
+      o.value = m.symbol; o.textContent = m.display || m.symbol;
+      if (m.symbol === _anSymbol) o.selected = true;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  }
+  if (forex.length) {
+    const og = document.createElement('optgroup');
+    og.label = 'Forex';
+    forex.forEach(f => {
+      const symVal = f.base + f.quote; // EURUSD (tanpa slash, konsisten dgn fetchOHLCV)
+      const o = document.createElement('option');
+      o.value = symVal; o.textContent = f.pair;
+      if (symVal === _anSymbol) o.selected = true;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  }
+  if (stocks.length) {
+    const usStocks  = stocks.filter(s => s.assetType === 'stock-us');
+    const idxStocks = stocks.filter(s => s.assetType === 'stock-idx');
+    if (usStocks.length) {
+      const og = document.createElement('optgroup');
+      og.label = 'Saham US';
+      usStocks.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.symbol; o.textContent = `${s.symbol} — ${s.name}`;
+        if (s.symbol === _anSymbol) o.selected = true;
+        og.appendChild(o);
+      });
+      sel.appendChild(og);
+    }
+    if (idxStocks.length) {
+      const og = document.createElement('optgroup');
+      og.label = 'Saham Indonesia (IDX)';
+      idxStocks.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.symbol; o.textContent = `${s.symbol} — ${s.name}`;
+        if (s.symbol === _anSymbol) o.selected = true;
+        og.appendChild(o);
+      });
+      sel.appendChild(og);
+    }
+  }
+  if (!sel.value) {
+    sel.value = 'BTCUSDT';
+    _anSymbol = 'BTCUSDT';
+  }
+}
+
+/* Cek apakah simbol adalah saham — dipakai untuk membatasi timeframe
+   yang relevan untuk investasi jangka panjang (tidak ada M1/M5/M15). */
+function _anIsStock(sym) {
+  try {
+    const stocks = (window.CONFIG && window.CONFIG.STOCK_SYMBOLS) || [];
+    return stocks.some(s => s.symbol === sym);
+  } catch (e) { return false; }
+}
+
+/* ─── BUILD TIMEFRAME LIST ───
+   Saham (investasi jangka panjang): 30M, H1, H4, D1, W, M — tanpa
+   timeframe rendah (M1/M5/M15) karena tidak relevan untuk swing/posisi.
+   Instrumen lain (forex/crypto/metals): tetap M1 sampai D1 seperti semula. */
+const AN_TF_OPTIONS_STOCK = [
+  { value: 'M30', label: '30M' },
+  { value: 'H1',  label: 'H1'  },
+  { value: 'H4',  label: 'H4'  },
+  { value: 'D1',  label: 'D1'  },
+  { value: 'W1',  label: 'W'   },
+  { value: 'MN',  label: 'M'   },
+];
+const AN_TF_OPTIONS_DEFAULT = [
+  { value: 'M1',  label: '1M'  },
+  { value: 'M5',  label: '5M'  },
+  { value: 'M15', label: '15M' },
+  { value: 'M30', label: '30M' },
+  { value: 'H1',  label: 'H1'  },
+  { value: 'H4',  label: 'H4'  },
+  { value: 'D1',  label: 'D1'  },
+];
+
+function anBuildTFList(symbol) {
+  const sel = _el('an-tf-select');
+  if (!sel) return;
+
+  const opts = _anIsStock(symbol) ? AN_TF_OPTIONS_STOCK : AN_TF_OPTIONS_DEFAULT;
+  const validValues = opts.map(o => o.value);
+
+  // Kalau TF yang sedang aktif tidak ada di daftar baru (misalnya pindah
+  // dari crypto M5 ke saham), jatuhkan ke default yang masuk akal.
+  if (!validValues.includes(_anTF)) {
+    _anTF = _anIsStock(symbol) ? 'H1' : 'H1';
+  }
+
+  sel.innerHTML = '';
+  opts.forEach(o => {
+    const el = document.createElement('option');
+    el.value = o.value; el.textContent = o.label;
+    if (o.value === _anTF) el.selected = true;
+    sel.appendChild(el);
+  });
+
+  if (window.AppState) window.AppState.selectedTimeframe = _anTF;
+}
+
+window.anUpdateSymbol = function() {
+  const sel = _el('an-sym-select');
+  if (sel) {
+    _anSymbol = sel.value;
+    if (window.AppState) window.AppState.selectedInstrument = _anSymbol;
+    anBuildTFList(_anSymbol);
+    /* Reset analisis — buka kembali offset ke idle mode */
+    _anLastResult = null;
+    if (window.GoldOffset) window.GoldOffset.unlockAfterAnalysis();
+    const driftBar = _el('ts-drift-notif');
+    if (driftBar) driftBar.style.display = 'none';
+  }
+};
+window.anUpdateTF = function() {
+  const sel = _el('an-tf-select');
+  if (sel) {
+    _anTF = sel.value;
+    if (window.AppState) window.AppState.selectedTimeframe = _anTF;
+    /* Reset analisis — buka kembali offset ke idle mode */
+    _anLastResult = null;
+    if (window.GoldOffset) window.GoldOffset.unlockAfterAnalysis();
+    const driftBar = _el('ts-drift-notif');
+    if (driftBar) driftBar.style.display = 'none';
+  }
+};
+
+/* ─── MAIN RUN ─── */
+window.anRunAnalysis = async function() {
+  if (_anRunning) return;
+  _anRunning = true;
+
+  const btn = _el('btn-analyze');
+  if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+
+  anShowLoadingAll();
+
+  /* Fetch data jika belum ada */
+  let ohlcv = _getOHLCV(_anSymbol, _anTF);
+  let fetchErrorMsg = null;
+  if (!ohlcv || ohlcv.length < 20) {
+    if (window.API && window.API.fetchOHLCV) {
+      try { ohlcv = await window.API.fetchOHLCV(_anSymbol, _anTF); }
+      catch (e) { fetchErrorMsg = e.message; }
+    }
+    ohlcv = _getOHLCV(_anSymbol, _anTF) || ohlcv;
+  }
+
+  if (!ohlcv || ohlcv.length < 30) {
+    anShowNoData(fetchErrorMsg ? `Gagal memuat data ${_anSymbol}: ${fetchErrorMsg}` : null);
+    _anRunning = false;
+    if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+    return;
+  }
+
+  /* Jalankan semua analisis */
+  const price = ohlcv[ohlcv.length - 1].close;
+  const A = window.Analysis;
+  const S = window.Signals;
+
+  let conf, setup, mtf, indsum, allAnalysis;
+
+  try { conf  = S ? S.calcConfluenceScore(ohlcv, price, _anSymbol) : null; } catch(e) { conf = null; }
+  try { setup = S ? S.generateTradeSetup(_anSymbol, ohlcv, _anTF) : null; } catch(e) { setup = null; }
+  try { mtf   = S ? S.getMTFAnalysis(_anSymbol) : null; } catch(e) { mtf = null; }
+  try { indsum= S ? S.getIndicatorSummary(ohlcv) : null; } catch(e) { indsum = null; }
+  try { allAnalysis = A ? A.runAll(ohlcv, _anSymbol) : null; } catch(e) { allAnalysis = null; }
+
+  _anLastResult = { ohlcv, price, conf, setup, mtf, indsum, allAnalysis };
+
+  /* ── Bekukan selisih XAU selama analisis aktif ── */
+  if (window.GoldOffset) window.GoldOffset.lockForAnalysis();
+
+  /* Render semua sections */
+  anRenderConfluence(conf);
+  anRenderTradeSetup(setup, price);
+  anRenderSMC(allAnalysis);
+  anRenderICT(allAnalysis, ohlcv);
+  anRenderFibonacci(allAnalysis);
+  anRenderOrderBlocks(allAnalysis);
+  anRenderFVG(allAnalysis);
+  anRenderCandlePatterns(allAnalysis);
+  anRenderElliott(allAnalysis);
+  anRenderWyckoff(allAnalysis);
+  anRenderHarmonic(allAnalysis);
+  anRenderMarketStructure(allAnalysis);
+  anRenderMTF(mtf);
+  anRenderIndicatorSummary(indsum);
+
+  /* Last update */
+  const now = new Date();
+  const lu = _el('an-lastupdate');
+  if (lu) lu.textContent = `Update: ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const sub = _el('an-subtitle');
+  if (sub) sub.textContent = `${_anSymbol} · ${_anTF} · ${ohlcv.length} candle`;
+
+  _anRunning = false;
+  if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+};
+
+/* ─── SHOW LOADING ─── */
+function anShowLoadingAll() {
+  const spinner = '<div class="an-loading"><div class="an-spinner"></div></div>';
+  ['smc-body','ict-body','fib-body','ob-body','fvg-body','cp-body',
+   'ew-body','wyckoff-body','harm-body','ms-body'].forEach(id => {
+    const el = _el(id); if (el) el.innerHTML = spinner;
+  });
+  const tb = _el('mtf-tbody');
+  if (tb) tb.innerHTML = `<tr><td colspan="9" class="an-loading"><div class="an-spinner"></div>&nbsp;Memuat...</td></tr>`;
+  ['ind-tab-trend','ind-tab-momentum','ind-tab-volume','ind-tab-volatility'].forEach(id => {
+    const el = _el(id); if (el) el.innerHTML = spinner;
+  });
+}
+
+function anShowNoData(customMsg) {
+  const msg = `<div class="an-nodata-notice">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="var(--accent-gold)" stroke-width="1.2"/><line x1="7" y1="4.5" x2="7" y2="7.5" stroke="var(--accent-gold)" stroke-width="1.2" stroke-linecap="round"/><circle cx="7" cy="9.5" r="0.7" fill="var(--accent-gold)"/></svg>
+    ${customMsg || `Data OHLCV ${_anSymbol} ${_anTF} belum tersedia. Buka halaman Chart, pilih instrumen ini, lalu kembali dan klik Analisis.`}
+  </div>`;
+  ['smc-body','ict-body','fib-body','ob-body','fvg-body','cp-body',
+   'ew-body','wyckoff-body','harm-body','ms-body'].forEach(id => {
+    const el = _el(id); if (el) el.innerHTML = msg;
+  });
+}
+
+/* ═══ CONFLUENCE GAUGE ═══ */
+function anRenderConfluence(conf) {
+  if (!conf) return;
+  const score = conf.total || 0;
+  const dir   = conf.direction || 'neutral';
+  const str   = conf.strength  || 'low';
+
+  /* Ring */
+  const ringFill = _el('cg-ring-fill');
+  if (ringFill) {
+    const circumference = 352;
+    const pct     = Math.min(score / 20, 1);
+    const offset  = circumference - pct * circumference;
+    const color   = dir === 'buy' ? '#00d084' : dir === 'sell' ? '#ff4757' : '#7d8590';
+    ringFill.style.strokeDashoffset = offset;
+    ringFill.setAttribute('stroke', color);
+  }
+
+  const scoreEl = _el('cg-score-num');
+  if (scoreEl) {
+    scoreEl.textContent = score;
+    scoreEl.style.color = dir === 'buy' ? '#00d084' : dir === 'sell' ? '#ff4757' : '#e6edf3';
+  }
+
+  const dirBadge = _el('cg-dir-badge');
+  const dirIcon  = _el('cg-dir-icon');
+  const dirText  = _el('cg-dir-text');
+  if (dirBadge) {
+    dirBadge.className = `cg-direction-badge ${dir}`;
+    if (dirIcon) dirIcon.textContent = dir === 'buy' ? '▲' : dir === 'sell' ? '▼' : '◈';
+    if (dirText) dirText.textContent = dir.toUpperCase();
+  }
+
+  const strEl = _el('cg-strength');
+  if (strEl) {
+    const strMap = { extreme: 'EXTREME STRENGTH', high: 'HIGH STRENGTH', medium: 'MEDIUM STRENGTH', low: 'LOW STRENGTH' };
+    strEl.textContent = strMap[str] || str.toUpperCase();
+  }
+
+  /* Methods list */
+  const ml = _el('cg-methods-list');
+  if (ml && conf.details && conf.details.length > 0) {
+    const shown = conf.details.slice(0, 8);
+    ml.innerHTML = shown.map(d => {
+      const cls = d.signal === 'buy' ? 'buy' : d.signal === 'sell' ? 'sell' : '';
+      const pts = d.points || 0;
+      return `<div class="cg-method-item">
+        <span class="cg-method-name">${d.method}</span>
+        <span class="cg-method-pts ${cls}">+${pts}</span>
+      </div>`;
+    }).join('');
+  }
+
+  /* Breakdown Bars */
+  const cbBody = _el('cb-body');
+  const cbBadge = _el('cb-total-badge');
+  if (cbBadge) cbBadge.textContent = `${score}/20 pts`;
+  if (cbBody && conf.breakdown) {
+    const bk = conf.breakdown;
+    const items = [
+      { key: 'demandSupply',    label: 'Supply/Demand',     max: 2 },
+      { key: 'orderBlock',      label: 'Order Block',        max: 2 },
+      { key: 'fibonacci',       label: 'Fibonacci GP',       max: 2 },
+      { key: 'premiumDiscount', label: 'SMC Premium/Disc',   max: 2 },
+      { key: 'bos',             label: 'BOS / CHoCH',        max: 1 },
+      { key: 'fvg',             label: 'Fair Value Gap',     max: 1 },
+      { key: 'candlePattern',   label: 'Candle Pattern',     max: 1 },
+      { key: 'rsi',             label: 'RSI',                max: 1 },
+      { key: 'macd',            label: 'MACD Cross',         max: 1 },
+      { key: 'killzone',        label: 'ICT Killzone',       max: 1 },
+      { key: 'wyckoff',         label: 'Wyckoff',            max: 1 },
+      { key: 'harmonic',        label: 'Harmonic PRZ',       max: 1 },
+      { key: 'elliott',         label: 'Elliott Wave',       max: 1 },
+    ];
+    cbBody.innerHTML = items.map(item => {
+      const pts  = bk[item.key] || 0;
+      const pct  = Math.min((pts / item.max) * 100, 100);
+      const cls  = pts > 0 ? (dir === 'sell' ? 'sell' : 'buy') : 'neutral';
+      return `<div class="cb-item">
+        <span class="cb-label">${item.label}</span>
+        <div class="cb-bar-track"><div class="cb-bar-fill ${cls}" style="width:${pct}%"></div></div>
+        <span class="cb-pts">${pts}/${item.max}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+/* ═══ TRADE SETUP ═══ */
+function anRenderTradeSetup(setup, price) {
+  if (!setup || !setup.valid) {
+    // Kosongkan SEMUA field — jangan biarkan data setup sebelumnya nyangkut,
+    // karena bisa bikin user kira itu setup yang masih berlaku.
+    const clearIds = ['ts-entry','ts-sl','ts-tp1','ts-tp2','ts-tp3'];
+    clearIds.forEach(id => { const el = _el(id); if (el) el.textContent = '—'; });
+
+    const subIds = { 'ts-sl-pips': '— pips', 'ts-tp1-pips': 'RR 1:1', 'ts-tp2-pips': 'RR 1:2', 'ts-tp3-pips': 'RR 1:4' };
+    Object.keys(subIds).forEach(id => { const el = _el(id); if (el) el.textContent = subIds[id]; });
+
+    const probLabel = _el('ts-prob-label');
+    if (probLabel) probLabel.textContent = 'Probability: —';
+
+    const rrRow = _el('ts-rr-row');
+    if (rrRow) rrRow.innerHTML = `<span class="an-badge neut">Confluence tidak cukup untuk setup trade (min strength: medium)</span>`;
+
+    anRenderEntryStatus(null, null);
+    anRenderTVPrices(null, _anSymbol);
+    anRenderLotSize(null);
+    return;
+  }
+  const sym = _anSymbol;
+  const set = (id, val) => { const el = _el(id); if(el) el.textContent = val; };
+  set('ts-entry', _fmtPrice(setup.entry, sym));
+  set('ts-sl',    _fmtPrice(setup.sl, sym));
+  set('ts-tp1',   _fmtPrice(setup.tp1, sym));
+  set('ts-tp2',   _fmtPrice(setup.tp2, sym));
+  set('ts-tp3',   _fmtPrice(setup.tp3, sym));
+  set('ts-sl-pips',  `SL: ${setup.slPips} pips`);
+  set('ts-tp1-pips', `RR 1:${setup.rr1}`);
+  set('ts-tp2-pips', `RR 1:${setup.rr2}`);
+  set('ts-tp3-pips', `RR 1:${setup.rr3}`);
+
+  const probLabel = _el('ts-prob-label');
+  if (probLabel) probLabel.textContent = `Probability: ${setup.probability}%`;
+
+  const rrRow = _el('ts-rr-row');
+  if (rrRow) {
+    const dir = setup.direction;
+    const dirLbl = dir === 'buy' ? '▲ LONG' : '▼ SHORT';
+    const dirCls = dir === 'buy' ? 'bull' : 'bear';
+    rrRow.innerHTML = `
+      <span class="an-badge ${dirCls}" style="font-size:0.72rem;padding:4px 10px">${dirLbl}</span>
+      <span class="ts-rr-badge">RR1 = 1:${setup.rr1}</span>
+      <span class="ts-rr-badge">RR2 = 1:${setup.rr2}</span>
+      <span class="ts-rr-badge">RR3 = 1:${setup.rr3}</span>
+      <span class="ts-rr-badge">ATR: ${_fmtPrice(setup.atr, sym)}</span>
+      <span class="ts-prob-badge">Prob: ${setup.probability}% · ${(setup.strength||'').toUpperCase()}</span>
+    `;
+  }
+
+  /* ── Harga Broker/TradingView (live, khusus XAU) ── */
+  anRenderTVPrices(setup, sym);
+
+  /* ── Status entry real-time (masih valid / sudah ketinggalan / SL kena) ── */
+  anRenderEntryStatus(setup, price);
+
+  /* ── Kalkulator position size / lot ── */
+  anRenderLotSize(setup);
+}
+
+/* ── TV Price Row Renderer ── */
+/* ═══ HARGA BROKER/TRADINGVIEW ═══
+   Selisih (offset) STABIL selama analisis berjalan — tidak berubah-ubah.
+   gold-offset.js v4 membekukan offset saat analisis aktif (lockForAnalysis)
+   dan hanya memperbarui di background. Jika selisih berubah ≥ 5 poin
+   (DRIFT_THRESHOLD), muncul notif kuning — user yang memutuskan. */
+function anRenderTVPrices(setup, sym) {
+  const tvRow = _el('ts-tv-row');
+  if (!tvRow) return;
+
+  const isXAU = sym && (sym === 'XAUUSDT' || sym === 'XAUTUSDT');
+  if (!isXAU || !setup || !setup.valid) {
+    tvRow.style.display = 'none';
+    return;
+  }
+
+  const offset = window.GoldOffset ? window.GoldOffset.get() : 13.29;
+  const dec = 2;
+  const conv = (v) => {
+    const num = parseFloat(v);
+    if (!v || isNaN(num)) return '—';
+    return (num + offset).toFixed(dec);
+  };
+
+  const setTV = (id, val) => { const el = _el(id); if (el) el.textContent = val; };
+  setTV('ts-tv-entry', conv(setup.entry));
+  setTV('ts-tv-sl',    conv(setup.sl));
+  setTV('ts-tv-tp1',   conv(setup.tp1));
+  setTV('ts-tv-tp2',   conv(setup.tp2));
+  setTV('ts-tv-tp3',   conv(setup.tp3));
+
+  const offsetSign = offset >= 0 ? `+${offset.toFixed(2)}` : offset.toFixed(2);
+  setTV('ts-tv-offset', offsetSign);
+
+  /* Tampilkan badge AUTO / MANUAL */
+  const badge = _el('ts-tv-offset-mode-badge');
+  if (badge && window.GoldOffset) {
+    const isManual = window.GoldOffset.isManual();
+    badge.textContent  = isManual ? 'MANUAL' : 'AUTO';
+    badge.style.background = isManual ? 'rgba(255,71,87,0.15)' : 'rgba(0,208,132,0.15)';
+    badge.style.color      = isManual ? '#ff4757' : '#00d084';
+    badge.style.display    = 'inline';
+  }
+
+  tvRow.style.display = 'flex';
+}
+
+/* ── Edit / Reset selisih harga XAU ── */
+(function setupGoldOffsetEditor() {
+  const editBtn   = _el('ts-tv-offset-edit-btn');
+  const editRow   = _el('ts-tv-offset-edit-row');
+  const input     = _el('ts-tv-offset-input');
+  const saveBtn   = _el('ts-tv-offset-save-btn');
+  const cancelBtn = _el('ts-tv-offset-cancel-btn');
+  const resetBtn  = _el('ts-tv-offset-reset-btn');
+  if (!editBtn || !editRow || !input || !saveBtn || !cancelBtn) return;
+
+  editBtn.addEventListener('click', () => {
+    input.value = window.GoldOffset ? window.GoldOffset.get().toFixed(2) : '13.29';
+    editRow.style.display = 'flex';
+    input.focus();
+  });
+  cancelBtn.addEventListener('click', () => { editRow.style.display = 'none'; });
+  saveBtn.addEventListener('click', () => {
+    if (window.GoldOffset && window.GoldOffset.set(input.value)) {
+      editRow.style.display = 'none';
+      if (_anLastResult && _anLastResult.setup) anRenderTVPrices(_anLastResult.setup, _anSymbol);
+    }
+  });
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (window.GoldOffset) window.GoldOffset.reset();
+      editRow.style.display = 'none';
+      setTimeout(() => {
+        if (_anLastResult && _anLastResult.setup) anRenderTVPrices(_anLastResult.setup, _anSymbol);
+      }, 500);
+    });
+  }
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveBtn.click();
+    if (e.key === 'Escape') cancelBtn.click();
+  });
+
+  /* Update tampilan saat offset berubah (manual/reset/idle) — TIDAK saat analisis aktif */
+  document.addEventListener('goldOffsetUpdated', (e) => {
+    /* Saat analisis aktif: event ini hanya terjadi dari manual set atau confirmDrift
+       (lockForAnalysis memblokir idle refresh). Tetap render ulang harga broker. */
+    if (_anLastResult && _anLastResult.setup) anRenderTVPrices(_anLastResult.setup, _anSymbol);
+    /* Sembunyikan notif drift jika ada */
+    const driftBar = _el('ts-drift-notif');
+    if (driftBar) driftBar.style.display = 'none';
+  });
+
+  /* ── Notifikasi Drift Signifikan ── */
+  document.addEventListener('goldDriftDetected', (e) => {
+    const { current, newOffset, delta } = e.detail;
+    let driftBar = _el('ts-drift-notif');
+
+    /* Buat elemen notif jika belum ada */
+    if (!driftBar) {
+      driftBar = document.createElement('div');
+      driftBar.id = 'ts-drift-notif';
+      driftBar.style.cssText = [
+        'display:none',
+        'align-items:center',
+        'gap:10px',
+        'flex-wrap:wrap',
+        'width:100%',
+        'margin-top:8px',
+        'padding:9px 12px',
+        'border-radius:6px',
+        'background:rgba(255,165,0,0.10)',
+        'border:1px solid rgba(255,165,0,0.35)',
+        'font-size:0.72rem',
+        'font-family:var(--font-sans)',
+        'color:var(--text-secondary)',
+      ].join(';');
+      /* Sisipkan di bawah ts-tv-row */
+      const tvRow = _el('ts-tv-row');
+      if (tvRow && tvRow.parentNode) {
+        tvRow.parentNode.insertBefore(driftBar, tvRow.nextSibling);
+      }
+    }
+
+    const sign  = (newOffset - current) >= 0 ? '+' : '';
+    const delta2 = (newOffset - current).toFixed(2);
+    driftBar.innerHTML = `
+      <span style="color:#ffa500;font-weight:700">⚠ Selisih berubah signifikan</span>
+      <span>Lama: <b style="font-family:var(--font-mono)">${current >= 0 ? '+' : ''}${current.toFixed(2)}</b>
+        → Baru: <b style="font-family:var(--font-mono)">${newOffset >= 0 ? '+' : ''}${newOffset.toFixed(2)}</b>
+        (<span style="color:#ffa500">${sign}${delta2}</span>)
+      </span>
+      <span style="margin-left:auto;display:flex;gap:6px">
+        <button id="drift-confirm-btn" type="button"
+          style="padding:4px 10px;background:#ffa500;color:#0d1117;border:none;border-radius:4px;font-weight:700;font-size:0.7rem;cursor:pointer">
+          Perbarui &amp; Analisis Ulang
+        </button>
+        <button id="drift-ignore-btn" type="button"
+          style="padding:4px 10px;background:var(--bg-hover);color:var(--text-secondary);border:1px solid var(--border-color);border-radius:4px;font-size:0.7rem;cursor:pointer">
+          Abaikan
+        </button>
+      </span>`;
+    driftBar.style.display = 'flex';
+
+    /* Tombol Perbarui → terapkan offset baru + jalankan ulang analisis */
+    const confirmBtn = driftBar.querySelector('#drift-confirm-btn');
+    if (confirmBtn) {
+      confirmBtn.onclick = () => {
+        if (window.GoldOffset) window.GoldOffset.confirmDrift();
+        driftBar.style.display = 'none';
+        /* Jalankan ulang analisis otomatis */
+        if (window.anRunAnalysis) window.anRunAnalysis();
+      };
+    }
+
+    /* Tombol Abaikan → tetap offset lama */
+    const ignoreBtn = driftBar.querySelector('#drift-ignore-btn');
+    if (ignoreBtn) {
+      ignoreBtn.onclick = () => {
+        if (window.GoldOffset) window.GoldOffset.ignoreDrift();
+        driftBar.style.display = 'none';
+      };
+    }
+  });
+})();
+
+
+
+/* ═══ ENTRY STATUS — real-time ═══
+   Memberi tahu user apakah setup entry masih bisa dipakai:
+   - MENUNGGU : harga belum mencapai zona entry
+   - AKTIF    : harga sudah di zona entry, bisa entry sekarang
+   - TERLEWAT : harga sudah lari ke arah TP1+ tanpa mampir ke entry → entry terlewat
+   - BATAL    : harga sudah menyentuh SL → setup tidak valid lagi
+   Dipanggil ulang otomatis tiap ada update harga live (event 'pricesUpdated'),
+   jadi statusnya selalu mengikuti kondisi pasar terkini, bukan data beku
+   dari saat analisis dijalankan.
+*/
+function _anGetLivePrice(sym) {
+  try {
+    const p = window.AppState && window.AppState.prices && window.AppState.prices[sym];
+    if (p && typeof p.price === 'number' && p.price > 0) return p.price;
+  } catch (e) {}
+  return null;
+}
+
+function anRenderEntryStatus(setup, fallbackPrice) {
+  const box = _el('ts-entry-status');
+  if (!box) return;
+
+  if (!setup || !setup.valid) {
+    box.style.display = 'none';
+    box.innerHTML = '';
+    return;
+  }
+
+  const sym = _anSymbol;
+  const isXAU = (sym === 'XAUUSDT' || sym === 'XAUTUSDT');
+
+  // Tentukan harga acuan + level entry/sl/tp1 dalam SATU unit yang konsisten.
+  // Untuk XAU: entry/sl/tp1 ikut dikonversi ke istilah broker/TradingView juga
+  // (bukan cuma harga "current"-nya saja) — supaya perbandingannya benar
+  // (apple-to-apple), pakai selisih (offset) manual yang stabil dari js/gold-offset.js.
+  let current, entry, sl, tp1, sourceLabel;
+  const binanceLive = _anGetLivePrice(sym);
+  const offset = (isXAU && window.GoldOffset) ? window.GoldOffset.get() : 0;
+
+  if (isXAU && binanceLive !== null) {
+    current = binanceLive + offset;
+    entry = setup.entry + offset;
+    sl    = setup.sl + offset;
+    tp1   = setup.tp1 + offset;
+    sourceLabel = 'live · setara TradingView';
+  } else {
+    current = (typeof binanceLive === 'number') ? binanceLive : fallbackPrice;
+    entry = setup.entry; sl = setup.sl; tp1 = setup.tp1;
+    sourceLabel = (typeof binanceLive === 'number') ? 'live · Binance' : '(terakhir dianalisis)';
+  }
+
+  if (typeof current !== 'number' || isNaN(current)) {
+    box.style.display = 'none';
+    return;
+  }
+
+  const dir   = setup.direction; // 'buy' | 'sell'
+  const zoneTolerance = Math.abs(entry - sl) * 0.15; // toleransi ±15% dari jarak SL sbg "zona entry"
+
+  let state, label, desc, color, icon;
+
+  if (dir === 'buy') {
+    if (current <= sl) {
+      state = 'invalid'; label = 'SETUP BATAL';
+      desc = 'Anda telah ketinggalan. Setup ini tidak valid lagi — tunggu analisis baru.';
+    } else if (current >= tp1) {
+      state = 'missed'; label = 'ENTRY TERLEWAT';
+      desc = 'Harga sudah bergerak ke arah TP1 tanpa mampir ke zona entry. Entry di harga sekarang berisiko RR rendah — disarankan tunggu setup baru.';
+    } else if (current <= entry + zoneTolerance) {
+      state = 'active'; label = 'BISA ENTRY SEKARANG';
+      desc = 'Harga sudah berada di zona entry.';
+    } else {
+      const dist = current - entry;
+      state = 'waiting'; label = 'MENUNGGU HARGA TURUN KE ENTRY';
+      desc = `Harga masih ${_fmtPrice(dist, sym)} di atas level entry. Tunggu harga turun ke zona entry sebelum masuk.`;
+    }
+  } else { // sell
+    if (current >= sl) {
+      state = 'invalid'; label = 'SETUP BATAL';
+      desc = 'Anda telah ketinggalan. Setup ini tidak valid lagi — tunggu analisis baru.';
+    } else if (current <= tp1) {
+      state = 'missed'; label = 'ENTRY TERLEWAT';
+      desc = 'Harga sudah bergerak ke arah TP1 tanpa mampir ke zona entry. Entry di harga sekarang berisiko RR rendah — disarankan tunggu setup baru.';
+    } else if (current >= entry - zoneTolerance) {
+      state = 'active'; label = 'BISA ENTRY SEKARANG';
+      desc = 'Harga sudah berada di zona entry.';
+    } else {
+      const dist = entry - current;
+      state = 'waiting'; label = 'MENUNGGU HARGA NAIK KE ENTRY';
+      desc = `Harga masih ${_fmtPrice(dist, sym)} di bawah level entry. Tunggu harga naik ke zona entry sebelum masuk.`;
+    }
+  }
+
+  const styleMap = {
+    active:  { bg: 'rgba(0,208,132,0.08)',  border: 'rgba(0,208,132,0.3)',  fg: '#00d084' },
+    waiting: { bg: 'rgba(77,171,247,0.08)', border: 'rgba(77,171,247,0.3)', fg: '#4dabf7' },
+    missed:  { bg: 'rgba(255,215,0,0.08)',  border: 'rgba(255,215,0,0.3)',  fg: '#ffd700' },
+    invalid: { bg: 'rgba(255,71,87,0.08)',  border: 'rgba(255,71,87,0.3)',  fg: '#ff4757' },
+  };
+  const iconMap = {
+    active:  '●',
+    waiting: '◷',
+    missed:  '▲',
+    invalid: '✕',
+  };
+  const sk = styleMap[state];
+
+  box.style.display = 'flex';
+  box.style.background = sk.bg;
+  box.style.border = `1px solid ${sk.border}`;
+  box.innerHTML = `
+    <span style="font-size:1rem;color:${sk.fg};flex-shrink:0;line-height:1">${iconMap[state]}</span>
+    <div style="min-width:0">
+      <div style="font-family:var(--font-sans);font-weight:700;font-size:0.76rem;letter-spacing:0.03em;color:${sk.fg};margin-bottom:2px">${label}</div>
+      <div style="font-family:var(--font-sans);font-size:0.74rem;color:var(--text-secondary);line-height:1.4">${desc}</div>
+      <div style="font-family:var(--font-mono);font-size:0.66rem;color:var(--text-muted);margin-top:4px">Harga saat ini: ${_fmtPrice(current, sym)} ${sourceLabel}</div>
+    </div>`;
+}
+
+/* Update status entry otomatis tiap ada harga baru masuk — tanpa re-run analisis */
+document.addEventListener('pricesUpdated', function () {
+  if (_anLastResult && _anLastResult.setup && _anLastResult.setup.valid) {
+    anRenderEntryStatus(_anLastResult.setup, _anLastResult.price);
+  }
+});
+
+/* Update juga tiap selisih harga XAU diubah manual lewat tombol ✎ */
+document.addEventListener('goldOffsetUpdated', function () {
+  if (_anLastResult && _anLastResult.setup && _anLastResult.setup.valid) {
+    anRenderEntryStatus(_anLastResult.setup, _anLastResult.price);
+    anRenderTVPrices(_anLastResult.setup, _anSymbol);
+  }
+});
+
+/* ═══ KALKULATOR POSITION SIZE / LOT ═══
+   Estimasi umum berdasarkan jarak SL hasil analisis. BUKAN saran
+   finansial — pip/contract value bisa berbeda tergantung broker,
+   selalu dicek ulang sebelum entry.
+   - Crypto   : dihitung exact (quantity = risiko$ ÷ jarak SL harga)
+   - Forex    : estimasi pip value standar ($10/pip/lot non-JPY, ~$7/pip/lot JPY)
+   - Metals   : estimasi contract size umum (XAU=100oz, XAG=5000oz, CL=1000 barrel)
+*/
+/* ═══ KLASIFIKASI INSTRUMEN UNTUK KALKULATOR LOT ═══
+   Kalkulator ini HANYA didukung untuk 4 kelompok instrumen sesuai
+   spesifikasi kontrak resmi Exness (https://get.exness.help):
+     - forex : pasangan mata uang (EURUSD, USDJPY, dst)
+     - xau   : Gold / XAUUSD
+     - btc   : Bitcoin / BTCUSD
+     - eth   : Ethereum / ETHUSD
+   Instrumen lain (saham, silver, crude oil, dll) TIDAK didukung —
+   kalkulator akan tersembunyi untuk instrumen tersebut karena
+   spesifikasi kontraknya berbeda dan belum diverifikasi terhadap
+   broker Exness.
+*/
+function _anClassifyInstrument(sym) {
+  if (!sym) return null;
+  if (sym === 'XAUUSDT' || sym === 'XAUTUSDT' || sym === 'XAUUSD') return 'xau';
+  if (sym === 'XAGUSDT' || sym === 'XAGTUSDT' || sym === 'XAGUSD') return 'xag';
+  if (sym === 'CLUSDT'  || sym === 'USOIL' || sym === 'UKOIL' || sym === 'OILUSDT') return 'oil';
+  if (sym === 'BTCUSDT' || sym === 'BTCUSD')  return 'btc';
+  if (sym === 'ETHUSDT' || sym === 'ETHUSD')  return 'eth';
+  try {
+    const C = window.CONFIG;
+    if (C && C.FOREX_PAIRS) {
+      const isForexPair = C.FOREX_PAIRS.some(f => (f.base + f.quote) === sym);
+      if (isForexPair) return 'forex';
+    }
+  } catch (e) {}
+  // Fallback: pola 6 huruf khas forex (EURUSD, GBPJPY, dst) yang mungkin
+  // belum terdaftar di FOREX_PAIRS tapi tetap pasangan mata uang valid.
+  if (/^[A-Z]{6}$/.test(sym) && !sym.endsWith('USDT')) return 'forex';
+  return null; // saham, indeks, dan instrumen lain — tidak didukung
+}
+
+/* ═══ SPESIFIKASI KONTRAK & MARGIN RESMI EXNESS (akun Standard/Pro, MT5) ═══
+   Sumber: get.exness.help — Commodities, Cryptocurrencies, Margin (per Juni 2026)
+
+   Dua metode margin di Exness:
+   1) marginMode:'leverage' → Margin = Lots × ContractSize × Price / Leverage
+      Leverage IKUT akun (mis. 1:2000). Berlaku utk XAUUSD, XAGUSD, Forex.
+   2) marginMode:'fixedPct' → Margin = Lots × ContractSize × Price × fixedPct
+      Margin FIXED, TIDAK ikut leverage akun. Berlaku utk BTCUSD, ETHUSD, USOIL/UKOIL.
+
+     XAUUSD : contract 100 troy oz · pip 0.10 ($1/pip per 0.01 lot) · margin via leverage akun
+     XAGUSD : contract 5000 troy oz · pip 0.01                      · margin via leverage akun
+     USOIL/UKOIL: contract 1000 barrel · pip 0.01 · margin FIXED 0.05% (≈ setara 1:2000)
+     BTCUSD : contract 1 BTC          · pip 0.1   · margin FIXED 0.25% (≈ setara 1:400, TIDAK ikut 1:2000)
+     ETHUSD : contract 1 ETH          · pip 0.1   · margin FIXED 0.25% (≈ setara 1:400, TIDAK ikut 1:2000), min lot 0.1
+     Forex  : contract 100,000 unit   · pip 0.0001 (0.01 utk XXX/JPY) · margin via leverage akun
+*/
+const EXNESS_SPEC = {
+  xau: { contractSize: 100,    pipSize: 0.10,  minLot: 0.01, lotStep: 0.01, marginMode: 'leverage', label: 'XAUUSD (Gold)' },
+  xag: { contractSize: 5000,   pipSize: 0.01,  minLot: 0.01, lotStep: 0.01, marginMode: 'leverage', label: 'XAGUSD (Silver)' },
+  oil: { contractSize: 1000,   pipSize: 0.01,  minLot: 0.01, lotStep: 0.01, marginMode: 'fixedPct', fixedPct: 0.0005, label: 'USOIL/UKOIL (Crude Oil)' },
+  btc: { contractSize: 1,      pipSize: 0.1,   minLot: 0.01, lotStep: 0.01, marginMode: 'fixedPct', fixedPct: 0.0025, label: 'BTCUSD' },
+  eth: { contractSize: 1,      pipSize: 0.1,   minLot: 0.1,  lotStep: 0.1,  marginMode: 'fixedPct', fixedPct: 0.0025, label: 'ETHUSD' },
+};
+
+/** Leverage akun (dipakai untuk instrumen marginMode:'leverage'). Sesuai akun: 1:2000. */
+const EXNESS_ACCOUNT_LEVERAGE = 2000;
+
+/** Ambil harga live dari AppState untuk konversi quote currency non-USD (forex JPY dkk). */
+function _anGetLivePriceFor(sym) {
+  try {
+    const p = window.AppState && window.AppState.prices && window.AppState.prices[sym];
+    if (p && typeof p.price === 'number' && p.price > 0) return p.price;
+  } catch (e) {}
+  return null;
+}
+
+/**
+ * Harga acuan live (dalam USD per unit kontrak) untuk hitung margin XAU/XAG/Oil/BTC/ETH.
+ * Coba ambil dari harga live AppState (lebih akurat & real-time); jika simbol app
+ * memakai entry/SL dari setup (sudah live), pakai itu sebagai fallback utama,
+ * karena setup.entry pasti merepresentasikan harga pasar saat analisis dijalankan.
+ */
+function _anGetRefPrice(type, setup, sym) {
+  // Prioritas 1: harga entry dari setup analisis (selalu live & relevan dgn instrumen aktif)
+  const entryPrice = parseFloat(setup && setup.entry);
+  if (entryPrice > 0) return entryPrice;
+  // Prioritas 2: AppState.prices utk simbol terkait
+  const live = _anGetLivePriceFor(sym);
+  if (live > 0) return live;
+  return null;
+}
+
+/**
+ * Hitung pip value 1.0 lot standar dalam USD untuk pasangan forex.
+ * Rumus resmi: pip value (quote ccy) = contractSize(100.000) × pipSize.
+ * Jika quote currency bukan USD, dikonversi: USD = nilai_quote / hargaQuoteUSD.
+ */
+function _anForexPipValueUSD(sym) {
+  const contractSize = 100000;
+  const isJPY  = sym.includes('JPY');
+  const pipSize = isJPY ? 0.01 : 0.0001;
+  const pipValueQuote = contractSize * pipSize; // dalam quote currency
+
+  const quoteCcy = sym.slice(3, 6);
+  if (quoteCcy === 'USD') return pipValueQuote; // sudah USD, tidak perlu konversi
+
+  // Pasangan dengan quote selain USD (mis. EURJPY, GBPJPY, EURGBP) —
+  // konversi pakai harga live quoteCCY/USD bila tersedia, fallback ke
+  // estimasi umum yang masih akurat untuk forex major.
+  const quoteUSDPair = `USD${quoteCcy}`;
+  const liveRate = _anGetLivePriceFor(quoteUSDPair);
+  if (liveRate && liveRate > 0) return pipValueQuote / liveRate;
+
+  // Fallback kasar bila harga live tidak tersedia (jarang terjadi)
+  return isJPY ? pipValueQuote / 150 : pipValueQuote; // asumsi USDJPY ≈150 sbg fallback
+}
+
+/** Format angka sebagai Rupiah (Rp 1.234.567) */
+function _anFormatIDR(amount) {
+  return 'Rp ' + Math.round(amount).toLocaleString('id-ID');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HELPER: Ambil modal & kurs dari panel modal di atas
+   - Selalu return dalam USD (konversi bila user pilih IDR)
+═══════════════════════════════════════════════════════════════ */
+function _anGetModalUSD() {
+  const amountEl = document.getElementById('an-modal-amount');
+  const kursEl   = document.getElementById('an-modal-kurs');
+  const amount   = Math.max(0, parseFloat((amountEl && amountEl.value) || 0) || 0);
+  const kurs     = Math.max(1000, parseFloat((kursEl && kursEl.value) || 16200) || 16200);
+  const isIDR    = (window._anModalCurrency === 'idr');
+  return isIDR ? (amount / kurs) : amount;
+}
+
+function _anGetKurs() {
+  const kursEl = document.getElementById('an-modal-kurs');
+  return Math.max(1000, parseFloat((kursEl && kursEl.value) || 16200) || 16200);
+}
+
+/* Currency state */
+window._anModalCurrency = 'usd';
+
+window.anSetModalCurrency = function(cur) {
+  window._anModalCurrency = cur;
+  const usdBtn = document.getElementById('an-modal-usd-btn');
+  const idrBtn = document.getElementById('an-modal-idr-btn');
+  const prefix = document.getElementById('an-modal-prefix');
+  if (usdBtn) { usdBtn.style.background = cur === 'usd' ? 'var(--accent-gold)' : 'var(--bg-hover)'; usdBtn.style.color = cur === 'usd' ? '#0d1117' : 'var(--text-secondary)'; }
+  if (idrBtn) { idrBtn.style.background = cur === 'idr' ? 'var(--accent-gold)' : 'var(--bg-hover)'; idrBtn.style.color = cur === 'idr' ? '#0d1117' : 'var(--text-secondary)'; }
+  if (prefix) prefix.textContent = cur === 'idr' ? 'Rp' : '$';
+  // update hint
+  const amountEl = document.getElementById('an-modal-amount');
+  if (amountEl && cur === 'usd') { if (parseFloat(amountEl.value) > 100000) amountEl.value = 1000; }
+  anModalChanged();
+};
+
+window.anModalChanged = function() {
+  const kurs    = _anGetKurs();
+  const amountEl = document.getElementById('an-modal-amount');
+  const equivEl  = document.getElementById('an-modal-equiv');
+  const amount   = Math.max(0, parseFloat((amountEl && amountEl.value) || 0) || 0);
+  const isIDR    = (window._anModalCurrency === 'idr');
+  if (equivEl) {
+    if (isIDR) {
+      const usd = amount / kurs;
+      equivEl.textContent = `≈ $${usd.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    } else {
+      equivEl.textContent = `≈ ${_anFormatIDR(amount * kurs)}`;
+    }
+  }
+  // Save
+  try {
+    localStorage.setItem('ff_modal_amount', amount);
+    localStorage.setItem('ff_modal_currency', window._anModalCurrency);
+    localStorage.setItem('ff_lot_kurs', kurs);
+  } catch(e) {}
+  // Re-render kalkulator jika ada setup aktif
+  if (window._anLastResult && window._anLastResult.setup) anRenderLotSize(window._anLastResult.setup);
+};
+
+/* Load saved modal settings */
+(function loadModalSettings() {
+  try {
+    const savedAmt = localStorage.getItem('ff_modal_amount');
+    const savedCur = localStorage.getItem('ff_modal_currency');
+    const savedKurs= localStorage.getItem('ff_lot_kurs');
+    const amountEl = document.getElementById('an-modal-amount');
+    const kursEl   = document.getElementById('an-modal-kurs');
+    if (savedAmt && amountEl)  amountEl.value  = savedAmt;
+    if (savedKurs && kursEl)   kursEl.value    = savedKurs;
+    if (savedCur) { window.anSetModalCurrency(savedCur); } else { anModalChanged(); }
+  } catch(e) { anModalChanged(); }
+})();
+
+/* ═══════════════════════════════════════════════════════════════════════
+   MODE: 'single' = rekomendasi terbaik saja, 'triple' = 3 level risiko
+═══════════════════════════════════════════════════════════════════════ */
+window._anLotMode = 'single';
+
+window.anSetLotMode = function(mode) {
+  window._anLotMode = mode;
+  const btnS = _el('ts-lot-mode-single');
+  const btnT = _el('ts-lot-mode-triple');
+  if (btnS) { btnS.style.background = mode === 'single' ? 'var(--accent-blue)' : 'var(--bg-hover)'; btnS.style.color = mode === 'single' ? '#0d1117' : 'var(--text-secondary)'; }
+  if (btnT) { btnT.style.background = mode === 'triple' ? 'var(--accent-blue)' : 'var(--bg-hover)'; btnT.style.color = mode === 'triple' ? '#0d1117' : 'var(--text-secondary)'; }
+  try { localStorage.setItem('ff_lot_mode', mode); } catch(e) {}
+  // Selalu render ulang — baik ada hasil analisis (tampilkan kartu) maupun belum (tampilkan placeholder jelas)
+  anRenderLotSize(window._anLastResult ? window._anLastResult.setup : null);
+};
+
+/* (Slider risiko % lama dihapus — kalkulator kini berbasis % margin dari saldo) */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   KALKULASI BERBASIS MARGIN (sesuai spesifikasi resmi Exness, leverage 1:2000)
+   marginPctOfBalance = berapa % dari SALDO yang dipakai sebagai margin.
+   Lot dihitung dari margin, BUKAN dari jarak SL — SL tetap dihitung sbg info risiko.
+═══════════════════════════════════════════════════════════════════════ */
+function _anCalcForMargin(setup, marginPctOfBalance, type, balanceUSD, kursIDR) {
+  const entry = parseFloat(setup.entry);
+  const sl    = parseFloat(setup.sl);
+  const tp1   = parseFloat(setup.tp1) || 0;
+  const tp2   = parseFloat(setup.tp2) || 0;
+  const tp3   = parseFloat(setup.tp3) || 0;
+  const slDistance = Math.abs(entry - sl);
+  const sym = setup.symbol || _anSymbol;
+
+  let pipSize, pipValuePerLot, slPips, minLot, lotStep, specLabel, marginPer1Lot;
+
+  if (type === 'forex') {
+    const isJPY = sym.includes('JPY');
+    pipSize        = isJPY ? 0.01 : 0.0001;
+    pipValuePerLot = _anForexPipValueUSD(sym);
+    slPips         = setup.slPips || (slDistance / pipSize);
+    minLot         = 0.01;
+    lotStep        = 0.01;
+    specLabel      = sym;
+    // Margin forex = lot × contractSize(100.000) × price / leverage.
+    // "price" disini harga pair vs USD; utk pair non-USD base, dipakai harga entry langsung
+    // (entry sudah dalam quote currency pair tersebut, estimasi yang wajar utk pair mayor).
+    const refPrice = entry > 0 ? entry : 1;
+    const baseCcy = sym.slice(0, 3);
+    // Jika base currency BUKAN USD (mis. EURUSD base=EUR), nilai kontrak dalam USD
+    // didekati dari harga entry pair vs USD bila base-nya USD, atau via base/USD bila tersedia.
+    let priceForMarginUSD;
+    if (baseCcy === 'USD') {
+      // Base currency sudah USD (USDJPY, USDCHF, USDCAD, dll)
+      // Nilai kontrak dalam USD = 1, tidak perlu konversi
+      priceForMarginUSD = 1;
+    } else {
+      // Base bukan USD (EURUSD, GBPUSD, XAUUSD, dll) → ambil harga base vs USD
+      const baseUSDPair = `${baseCcy}USD`;
+      const liveBase = _anGetLivePriceFor(baseUSDPair);
+      if (liveBase > 0) priceForMarginUSD = liveBase;
+      else if (sym.slice(3,6) === 'USD') priceForMarginUSD = refPrice; // base/USD langsung
+      else priceForMarginUSD = refPrice;
+    }
+    marginPer1Lot = (100000 * priceForMarginUSD) / EXNESS_ACCOUNT_LEVERAGE;
+  } else {
+    const spec = EXNESS_SPEC[type];
+    pipSize        = spec.pipSize;
+    pipValuePerLot = spec.contractSize * spec.pipSize;
+    slPips         = slDistance / pipSize;
+    minLot         = spec.minLot;
+    lotStep        = spec.lotStep;
+    specLabel      = spec.label;
+
+    const refPrice = _anGetRefPrice(type, setup, sym) || entry;
+    if (spec.marginMode === 'fixedPct') {
+      // Margin FIXED, tidak ikut leverage akun (BTC, ETH, USOIL/UKOIL)
+      marginPer1Lot = spec.contractSize * refPrice * spec.fixedPct;
+    } else {
+      // Margin via leverage akun (XAU, XAG)
+      marginPer1Lot = (spec.contractSize * refPrice) / EXNESS_ACCOUNT_LEVERAGE;
+    }
+  }
+
+  // ── Target margin dari % saldo ──
+  const targetMarginUSD = balanceUSD * (marginPctOfBalance / 100);
+  const lotsIdeal  = marginPer1Lot > 0 ? targetMarginUSD / marginPer1Lot : 0;
+  // Bulatkan ke step lot terdekat (ke bawah, agar tidak melebihi target margin)
+  const stepsCount = Math.floor(lotsIdeal / lotStep + 1e-9);
+  let lotsActual = Math.max(minLot, stepsCount * lotStep);
+  lotsActual = Math.round(lotsActual * 1000) / 1000; // hindari floating point residue
+  const belowMin = lotsIdeal < minLot && lotsIdeal > 0;
+
+  const marginActualUSD = lotsActual * marginPer1Lot;
+  const marginActualIDR = marginActualUSD * kursIDR;
+  const marginPctActual = balanceUSD > 0 ? (marginActualUSD / balanceUSD) * 100 : 0;
+
+  // Klasifikasi level risiko OTOMATIS dari rasio margin aktual terhadap saldo
+  let riskLevel, riskColor;
+  if (marginPctActual < 15)      { riskLevel = 'Low Risk';        riskColor = 'var(--accent-green)'; }
+  else if (marginPctActual < 35) { riskLevel = 'Medium Risk';     riskColor = 'var(--accent-blue)';  }
+  else if (marginPctActual < 60) { riskLevel = 'High Risk';       riskColor = 'var(--accent-gold)';  }
+  else                            { riskLevel = 'Full Margin · Extreme'; riskColor = 'var(--accent-red)'; }
+
+  // Risiko SL tetap dihitung sbg info (uang yg hilang kalau SL kena), terlepas dari basis lot margin
+  const slRiskUSD = slPips * pipValuePerLot * lotsActual;
+  const slRiskIDR = slRiskUSD * kursIDR;
+  const slRiskPctOfBalance = balanceUSD > 0 ? (slRiskUSD / balanceUSD) * 100 : 0;
+
+  const tp1Pips = tp1 > 0 ? Math.abs(tp1 - entry) / pipSize : 0;
+  const tp2Pips = tp2 > 0 ? Math.abs(tp2 - entry) / pipSize : 0;
+  const tp3Pips = tp3 > 0 ? Math.abs(tp3 - entry) / pipSize : 0;
+
+  return {
+    marginPctTarget: marginPctOfBalance, marginPctActual,
+    targetMarginUSD, marginActualUSD, marginActualIDR,
+    lotsIdeal, lotsActual, belowMin, minLot, lotStep,
+    marginPer1Lot,
+    riskLevel, riskColor,
+    slPips, pipValuePerLot, pipSize,
+    slRiskUSD, slRiskIDR, slRiskPctOfBalance,
+    tp1Pips, tp2Pips, tp3Pips,
+    profitTP1: tp1Pips > 0 ? tp1Pips * pipValuePerLot * lotsActual : 0,
+    profitTP2: tp2Pips > 0 ? tp2Pips * pipValuePerLot * lotsActual : 0,
+    profitTP3: tp3Pips > 0 ? tp3Pips * pipValuePerLot * lotsActual : 0,
+    profit10pip: 10 * pipValuePerLot * lotsActual,
+    specLabel, kursIDR,
+  };
+}
+
+/* ── Render satu kartu rekomendasi (untuk mode single maupun tiap kolom di triple) ── */
+function _anLotCard(c, accent, accentDim, accentBorder, badge) {
+  const k = c.kursIDR;
+  function row(label, valUSD, valIDR, color) {
+    const valLine = valIDR
+      ? `${valUSD}<span style="color:var(--text-muted);font-weight:500"> · </span>${valIDR}`
+      : valUSD;
+    return `<div style="margin-bottom:6px">
+      <div style="color:var(--text-secondary);font-size:0.68rem;margin-bottom:1px">${label}</div>
+      <div style="font-family:var(--font-mono);font-weight:700;font-size:0.74rem;line-height:1.35;word-break:break-word${color?';color:'+color:''}">${valLine}</div>
+    </div>`;
+  }
+  function rowTP(label, profitUSD, pips) {
+    if (!profitUSD || profitUSD <= 0) return '';
+    return `<div style="margin-bottom:5px">
+      <div style="color:${accent};font-size:0.68rem;margin-bottom:1px">${label} <span style="color:var(--text-muted);font-size:0.62rem">(${pips.toFixed(0)} pip)</span></div>
+      <div style="font-family:var(--font-mono);font-weight:700;color:${accent};font-size:0.74rem;line-height:1.35">$${profitUSD.toFixed(2)} <span style="color:var(--text-muted);font-weight:500">·</span> ${_anFormatIDR(profitUSD*k)}</div>
+    </div>`;
+  }
+
+  const belowWarn = c.belowMin ? `<div style="font-size:0.63rem;color:#f7c948;margin-top:2px;line-height:1.3">⚠ Margin terlalu kecil utk lot ideal — pakai min ${c.minLot} lot</div>` : '';
+
+  return `
+  <div style="background:${accentDim};border:1.5px solid ${accentBorder};border-radius:8px;padding:11px 12px;min-width:0;overflow:hidden">
+    ${badge ? `<div style="font-size:0.6rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;color:${accent};margin-bottom:6px;line-height:1.3">${badge}</div>` : ''}
+
+    <!-- Lot utama -->
+    <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;flex-wrap:wrap">
+      <span style="font-size:1.35rem;font-weight:800;font-family:var(--font-mono);color:${c.belowMin?'#f7c948':accent}">${c.lotsActual.toFixed(2)}</span>
+      <span style="font-size:0.72rem;color:var(--text-secondary);font-weight:600">lot</span>
+    </div>
+    <div style="margin-bottom:8px">
+      <span style="font-size:0.6rem;background:var(--bg-primary);border:1px solid ${accentBorder};border-radius:4px;padding:2px 7px;color:${c.riskColor};font-weight:800;text-transform:uppercase;letter-spacing:0.03em;white-space:nowrap">${c.riskLevel}</span>
+    </div>
+    ${belowWarn}
+
+    <div style="height:1px;background:var(--border-color);margin:8px 0"></div>
+
+    ${row('Margin dipakai', `$${c.marginActualUSD.toFixed(2)}`, _anFormatIDR(c.marginActualIDR), accent)}
+    ${row('% dari saldo', `${c.marginPctActual.toFixed(1)}%`, null, c.riskColor)}
+    ${row('SL (jarak)', `${c.slPips.toFixed(1)} pip`, null)}
+    ${row('Jika SL kena', `-$${c.slRiskUSD.toFixed(2)}`, `-${_anFormatIDR(c.slRiskIDR)}`, 'var(--accent-red)')}
+
+    <div style="height:1px;background:var(--border-color);margin:8px 0"></div>
+    <div style="font-size:0.62rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">Estimasi Profit</div>
+    ${rowTP('TP 1', c.profitTP1, c.tp1Pips)}
+    ${rowTP('TP 2', c.profitTP2, c.tp2Pips)}
+    ${rowTP('TP 3', c.profitTP3, c.tp3Pips)}
+  </div>`;
+}
+
+/* Preset % margin dari saldo untuk mode Low/Med/High (sesuai instruksi: 10% / 25% / 50%) */
+const AN_MARGIN_PRESET = { low: 10, med: 25, high: 50 };
+/* Preset default untuk mode "★ Terbaik" — konservatif & aman utk berbagai saldo */
+window._anBestMarginPct = 10;
+
+function anRenderLotSize(setup) {
+  const box = _el('ts-lot-calc');
+  const out = _el('ts-lot-result');
+  if (!box || !out) return;
+  box.style.display = 'block'; // box selalu tampil — placeholder ditangani di dalam, bukan disembunyikan
+
+  // ── Placeholder: belum ada hasil analisis ──
+  if (!setup || !setup.valid) {
+    out.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:22px 10px;color:var(--text-muted)">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style="opacity:0.5"><path d="M9 11l3 3L22 4M21 12v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="font-size:0.78rem;font-weight:700;color:var(--text-secondary)">Belum ada hasil analisis</div>
+        <div style="font-size:0.71rem;line-height:1.5;max-width:280px">Klik tombol <strong style="color:var(--text-secondary)">Analisis</strong> di atas dulu untuk mendapatkan entry &amp; SL, lalu lot size otomatis terhitung di sini</div>
+      </div>`;
+    return;
+  }
+
+  const sym  = setup.symbol || _anSymbol;
+  const type = _anClassifyInstrument(sym);
+  if (!type) {
+    out.innerHTML = `<div style="color:var(--text-muted);padding:14px 0;font-size:0.76rem;text-align:center">Kalkulator margin belum tersedia untuk instrumen ini.</div>`;
+    return;
+  }
+
+  const balanceUSD = _anGetModalUSD();
+  const kursIDR    = _anGetKurs();
+  const slDistance = Math.abs(parseFloat(setup.entry) - parseFloat(setup.sl));
+
+  if (!slDistance || balanceUSD <= 0) {
+    out.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:22px 10px;color:var(--text-muted)">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--text-secondary)">Isi modal dulu</div>
+        <div style="font-size:0.71rem;line-height:1.5;max-width:260px">Masukkan jumlah modal di panel atas untuk melihat estimasi lot &amp; margin.</div>
+      </div>`;
+    return;
+  }
+
+  const mode = window._anLotMode || 'single';
+
+  const modalLabel = window._anModalCurrency === 'idr'
+    ? _anFormatIDR(_anGetModalUSD() * kursIDR)
+    : `$${_anGetModalUSD().toFixed(2)}`;
+
+  const refSlPips = _anCalcForMargin(setup, 10, type, balanceUSD, kursIDR).slPips;
+
+  let html = `
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:0.71rem;color:var(--text-secondary)">Modal: <strong style="color:var(--accent-gold)">${modalLabel}</strong></span>
+      <span style="font-size:0.71rem;color:var(--text-secondary)">SL: <strong style="color:var(--text-primary)">${refSlPips.toFixed(1)} pip</strong></span>
+      <span style="font-size:0.71rem;color:var(--text-secondary)">Leverage: <strong style="color:var(--text-primary)">1:2000</strong></span>
+    </div>`;
+
+  if (mode === 'single') {
+    // Rekomendasi terbaik = margin % aman default (bisa disesuaikan via preset cepat)
+    const pct = window._anBestMarginPct || 10;
+    const c = _anCalcForMargin(setup, pct, type, balanceUSD, kursIDR);
+
+    html += _anLotCard(c,
+      'var(--accent-blue)', 'rgba(77,171,247,0.08)', 'rgba(77,171,247,0.3)',
+      '★ Rekomendasi Terbaik'
+    );
+
+    html += `<div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">`;
+    [5, 10, 15, 25, 50].forEach(p => {
+      const active = p === pct;
+      html += `<button onclick="anSetBestMarginPct(${p})" style="flex:1;min-width:46px;padding:5px 4px;font-size:0.66rem;font-weight:700;border:1px solid ${active ? 'var(--accent-blue)' : 'var(--border-color)'};border-radius:5px;background:${active ? 'rgba(77,171,247,0.12)' : 'var(--bg-input)'};color:${active ? 'var(--accent-blue)' : 'var(--text-secondary)'};cursor:pointer">${p}%</button>`;
+    });
+    html += `</div>`;
+    html += `<div style="margin-top:6px;font-size:0.65rem;color:var(--text-muted);text-align:center"></div>`;
+
+  } else {
+    // Mode triple: Low / Medium / High — berbasis % margin TETAP dari saldo
+    const cL = _anCalcForMargin(setup, AN_MARGIN_PRESET.low,  type, balanceUSD, kursIDR);
+    const cM = _anCalcForMargin(setup, AN_MARGIN_PRESET.med,  type, balanceUSD, kursIDR);
+    const cH = _anCalcForMargin(setup, AN_MARGIN_PRESET.high, type, balanceUSD, kursIDR);
+
+    // Grid CSS rapi: 3 kolom sejajar di layar lebar, otomatis jadi 1 kolom rapi (bukan wrap acak) di layar sempit
+    html += `<div class="ts-lot-triple-grid">`;
+    html += _anLotCard(cL,
+      'var(--accent-green)', 'rgba(0,208,132,0.07)', 'rgba(0,208,132,0.25)',
+      `🛡 LOW · ${AN_MARGIN_PRESET.low}% margin`
+    );
+    html += _anLotCard(cM,
+      'var(--accent-blue)',  'rgba(77,171,247,0.08)', 'rgba(77,171,247,0.3)',
+      `⚖ MEDIUM · ${AN_MARGIN_PRESET.med}% margin`
+    );
+    html += _anLotCard(cH,
+      'var(--accent-red)',   'rgba(255,71,87,0.07)',  'rgba(255,71,87,0.25)',
+      `🔥 HIGH · ${AN_MARGIN_PRESET.high}% margin`
+    );
+    html += `</div>`;
+
+    html += `<div style="margin-top:8px;padding:7px 10px;background:var(--bg-secondary);border-radius:6px;font-size:0.67rem;color:var(--text-muted);line-height:1.5">
+      <strong style="color:var(--text-secondary)">
+    </div>`;
+  }
+
+  out.innerHTML = html;
+}
+
+window.anSetBestMarginPct = function(pct) {
+  window._anBestMarginPct = pct;
+  try { localStorage.setItem('ff_lot_margin_pct', pct); } catch(e) {}
+  if (window._anLastResult && window._anLastResult.setup) anRenderLotSize(window._anLastResult.setup);
+};
+
+(function setupLotCalcInputs() {
+  try {
+    const savedPct  = localStorage.getItem('ff_lot_margin_pct');
+    const savedMode = localStorage.getItem('ff_lot_mode');
+    if (savedPct) window._anBestMarginPct = parseFloat(savedPct) || 10;
+    if (savedMode) window.anSetLotMode(savedMode);
+    else anRenderLotSize(null); // tampilkan placeholder sejak awal, sebelum analisis pertama
+  } catch(e) {}
+})();
+
+
+
+function anRenderSMC(all) {
+  const el = _el('smc-body');
+  const badge = _el('smc-trend-badge');
+  if (!all || !all.structure) {
+    if (el) el.innerHTML = '<div class="an-empty">Data tidak tersedia</div>';
+    return;
+  }
+  const ms = all.structure;
+  const pd = all.premiumDiscount;
+  const liq= all.liquidity;
+  if (badge) {
+    badge.className = `an-card-badge ${ms.trend === 'uptrend' ? 'bullish' : ms.trend === 'downtrend' ? 'bearish' : 'neutral'}`;
+    badge.textContent = ms.trend === 'uptrend' ? '↑ UPTREND' : ms.trend === 'downtrend' ? '↓ DOWNTREND' : 'RANGING';
+  }
+  let html = '';
+  html += anRow('Struktur', `<span class="an-badge ${ms.trend === 'uptrend' ? 'bull' : ms.trend === 'downtrend' ? 'bear' : 'neut'}">${ms.trend.toUpperCase()}</span>`);
+  if (ms.hhCount !== undefined) {
+    html += anRow('HH / LH', `<span class="an-row-val green">${ms.hhCount} HH</span> <span class="an-row-val"> / </span><span class="an-row-val red">${ms.lhCount} LH</span>`);
+    html += anRow('HL / LL', `<span class="an-row-val green">${ms.hlCount} HL</span> <span class="an-row-val"> / </span><span class="an-row-val red">${ms.llCount} LL</span>`);
+  }
+  if (pd) {
+    const zCls = pd.zone === 'discount' ? 'bull' : pd.zone === 'premium' ? 'bear' : 'neut';
+    html += anRow('Zone', `<span class="an-badge ${zCls}">${pd.zone.toUpperCase()}</span>`);
+    html += anRow('Posisi di Range', `<span class="an-row-val ${pd.zone==='discount'?'green':pd.zone==='premium'?'red':''}">${pd.percentage}%</span>`);
+    html += anRow('Midpoint', `<span class="an-row-val blue">${_fmtPrice(pd.midpoint, _anSymbol)}</span>`);
+    if (pd.isOptimalBuy)  html += anRow('', `<span class="an-badge bull">✓ Optimal Buy Zone ≤38.2%</span>`);
+    if (pd.isOptimalSell) html += anRow('', `<span class="an-badge bear">✓ Optimal Sell Zone ≥61.8%</span>`);
+  }
+  if (liq) {
+    html += anRow('Equal Highs', `<span class="an-row-val red">${(liq.equalHighs||[]).length} zona</span>`);
+    html += anRow('Equal Lows', `<span class="an-row-val green">${(liq.equalLows||[]).length} zona</span>`);
+  }
+  if (el) el.innerHTML = html || '<div class="an-empty">Tidak ada data SMC</div>';
+}
+
+/* ═══ ICT ═══ */
+function anRenderICT(all, ohlcv) {
+  const el = _el('ict-body');
+  const badge = _el('ict-kz-badge');
+  if (!all) {
+    if (el) el.innerHTML = '<div class="an-empty">Data tidak tersedia</div>';
+    return;
+  }
+  const kz  = all.killzone || {};
+  const bias= all.icttBias || {};
+  const ote = all.ote || {};
+  const amd = all.amd || {};
+  const sb  = (window.Analysis && window.Analysis.ICT)
+              ? window.Analysis.ICT.detectSilverBullet() : {};
+
+  if (badge) {
+    badge.className = kz.isActive ? 'an-card-badge bullish' : 'an-card-badge neutral';
+    badge.textContent = kz.isActive ? `KZ AKTIF` : 'KZ OFF';
+  }
+
+  /* Killzone visual bar */
+  const kzNames = ['Asian KZ','London KZ','NY AM KZ','Silver Bullet'];
+  const kzBar = `<div class="kz-bar">${
+    kzNames.map(n => {
+      const isAct = kz.isActive && kz.name && kz.name.includes(n.split(' ')[0]);
+      return `<div class="kz-item${isAct?' active':''}">${n.replace(' KZ','').replace(' AM','')}</div>`;
+    }).join('')
+  }</div>`;
+
+  let html = kzBar;
+  html += anRow('Killzone', `<span class="an-row-val ${kz.isActive?'green':''}">${kz.name || '—'}</span>`);
+  if (!kz.isActive && kz.nextKillzone)
+    html += anRow('Berikutnya', `<span class="an-row-val blue">${kz.nextKillzone.name} (${kz.minutesUntilNext} mnt)</span>`);
+  html += anRow('Daily Bias', `<span class="an-badge ${bias.bias==='bullish'?'bull':bias.bias==='bearish'?'bear':'neut'}">${(bias.bias||'neutral').toUpperCase()}</span>`);
+  if (bias.reasons && bias.reasons.length)
+    html += anRow('Alasan', `<span class="an-row-val" style="font-size:0.65rem;text-align:right">${bias.reasons.slice(0,2).join(' · ')}</span>`);
+  html += anRow('Silver Bullet', `<span class="an-badge ${sb.isActive?'gold':'neut'}">${sb.isActive?`AKTIF (${sb.minutesLeft}m tersisa)`:sb.windowNY||'10:00-11:00 NY'}</span>`);
+
+  if (ote && ote.zone) {
+    html += `<div class="divider"></div>`;
+    html += anRow('OTE Zone', `<span class="an-badge ${ote.isActive?'gold':'neut'}">${ote.isActive?'AKTIF 62-79%':'DI LUAR ZONA'}</span>`);
+    html += anRow('OTE Range', `<span class="an-row-val gold">${_fmtPrice(ote.zone.bottom,_anSymbol)} – ${_fmtPrice(ote.zone.top,_anSymbol)}</span>`);
+  }
+  if (amd && amd.phase) {
+    html += `<div class="divider"></div>`;
+    const amdClsMap = { accumulation:'bull', markup:'bull', distribution:'bear', markdown:'bear', manipulation:'gold', manipulation_bull:'gold', manipulation_bear:'bear' };
+    const amdCls = amdClsMap[amd.phase] || 'neut';
+    html += anRow('AMD Phase', `<span class="an-badge ${amdCls}">${amd.phase.replace('_',' ').toUpperCase()}</span>`);
+    html += anRow('AMD Confidence', `<div class="conf-progress" style="width:100px">
+      <div class="conf-progress-track"><div class="conf-progress-fill" style="width:${amd.confidence||0}%;background:var(--accent-blue)"></div></div>
+      <span style="font-size:0.65rem;font-family:var(--font-mono);color:var(--text-muted)">${amd.confidence||0}%</span>
+    </div>`);
+  }
+  if (el) el.innerHTML = html;
+}
+
+/* ═══ FIBONACCI ═══ */
+function anRenderFibonacci(all) {
+  const el = _el('fib-body');
+  const badge = _el('fib-trend-badge');
+  if (!all || !all.fibonacci) {
+    if (el) el.innerHTML = '<div class="an-empty">Data swing tidak cukup untuk Fibonacci</div>';
+    return;
+  }
+  const fib = all.fibonacci;
+  if (badge) {
+    badge.className = `an-card-badge ${fib.trend === 'bullish' ? 'bullish' : 'bearish'}`;
+    badge.textContent = fib.trend === 'bullish' ? '↑ BULLISH' : '↓ BEARISH';
+  }
+
+  let html = '';
+  html += anRow('Swing High', `<span class="an-row-val red">${_fmtPrice(fib.swingHigh, _anSymbol)}</span>`);
+  html += anRow('Swing Low',  `<span class="an-row-val green">${_fmtPrice(fib.swingLow, _anSymbol)}</span>`);
+  html += anRow('Harga Saat Ini', `<span class="an-row-val blue">${_fmtPrice(fib.currentPrice, _anSymbol)}</span>`);
+  html += `<div class="divider"></div>`;
+
+  if (fib.retracement) {
+    html += `<table class="fib-table">`;
+    fib.retracement.forEach(r => {
+      const isNear = all.price && Math.abs(r.price - all.price) / all.price < 0.002;
+      const gpCls  = r.isGoldenPocket ? ' fib-gp' : '';
+      html += `<tr class="${gpCls}">
+        <td>${r.label}${r.isGoldenPocket ? ' 🟡' : ''}</td>
+        <td>${_fmtPrice(r.price, _anSymbol)}</td>
+        <td>${isNear ? '<span class="an-badge blue">DEKAT</span>' : r.isGoldenPocket ? '<span class="an-badge gold">GP</span>' : ''}</td>
+      </tr>`;
+    });
+    html += `</table>`;
+  }
+
+  if (el) el.innerHTML = html;
+}
+
+/* ═══ ORDER BLOCKS ═══ */
+function anRenderOrderBlocks(all) {
+  const el = _el('ob-body');
+  const badge = _el('ob-count-badge');
+  if (!all || !all.orderBlocks) {
+    if (el) el.innerHTML = '<div class="an-empty">—</div>';
+    return;
+  }
+  const obs = all.orderBlocks;
+  const active = obs.filter(o => !o.mitigated);
+  if (badge) badge.textContent = `${active.length} aktif`;
+  if (!obs.length) {
+    if (el) el.innerHTML = '<div class="an-empty">Tidak ada Order Block terdeteksi</div>';
+    return;
+  }
+  const html = `<div class="an-zone-list">${
+    obs.slice(-6).reverse().map(ob => {
+      const cls = ob.type === 'bullish' ? 'bull' : 'bear';
+      const status = ob.mitigated
+        ? '<span class="an-badge warn">MITIGATED</span>'
+        : `<span class="an-badge ${cls}">AKTIF</span>`;
+      return `<div class="an-zone-item ${cls}">
+        <span class="an-zone-type ${cls}">${ob.type === 'bullish' ? 'BULL' : 'BEAR'}</span>
+        <div class="an-zone-range">
+          <span class="an-zone-high">H: ${_fmtPrice(ob.high, _anSymbol)}</span>
+          <span class="an-zone-low">L: ${_fmtPrice(ob.low, _anSymbol)}</span>
+          <span class="an-zone-label">${ob.strength || 'moderate'}</span>
+        </div>
+        ${status}
+      </div>`;
+    }).join('')
+  }</div>`;
+  if (el) el.innerHTML = html;
+}
+
+/* ═══ FVG + Supply/Demand ═══ */
+function anRenderFVG(all) {
+  const el = _el('fvg-body');
+  const badge = _el('fvg-count-badge');
+  if (!all) { if (el) el.innerHTML = '<div class="an-empty">—</div>'; return; }
+
+  const fvgs = (all.fvg || []).filter(f => !f.filled);
+  const sd   = all.supplyDemand || {};
+  if (badge) badge.textContent = `${fvgs.length} FVG`;
+
+  let html = '';
+  if (fvgs.length) {
+    html += `<div style="font-size:0.66rem;font-weight:600;letter-spacing:0.08em;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Fair Value Gaps</div>`;
+    html += `<div class="an-zone-list">${
+      fvgs.slice(-4).reverse().map(f => {
+        const cls = f.type === 'bullish' ? 'bull' : 'bear';
+        return `<div class="an-zone-item ${cls}">
+          <span class="an-zone-type ${cls}">${f.type === 'bullish' ? 'BULL' : 'BEAR'}</span>
+          <div class="an-zone-range">
+            <span class="an-zone-high">H: ${_fmtPrice(f.top, _anSymbol)}</span>
+            <span class="an-zone-low">L: ${_fmtPrice(f.bottom, _anSymbol)}</span>
+            <span class="an-zone-label">${f.sizeInPips} pips</span>
+          </div>
+          <span class="an-badge ${cls}">UNFILLED</span>
+        </div>`;
+      }).join('')
+    }</div>`;
+  }
+
+  const supply = (sd.supply || []).filter(z => z.quality === 'fresh').slice(-2);
+  const demand = (sd.demand || []).filter(z => z.quality === 'fresh').slice(-2);
+  if (supply.length || demand.length) {
+    html += `<div class="divider"></div>`;
+    html += `<div style="font-size:0.66rem;font-weight:600;letter-spacing:0.08em;color:var(--text-muted);text-transform:uppercase;margin-bottom:6px">Supply/Demand (Fresh)</div>`;
+    html += `<div class="an-zone-list">`;
+    supply.forEach(z => {
+      html += `<div class="an-zone-item bear">
+        <span class="an-zone-type bear">SUPPLY</span>
+        <div class="an-zone-range">
+          <span class="an-zone-high">H: ${_fmtPrice(z.top, _anSymbol)}</span>
+          <span class="an-zone-low">L: ${_fmtPrice(z.bottom, _anSymbol)}</span>
+        </div>
+        <span class="an-badge fresh">FRESH</span>
+      </div>`;
+    });
+    demand.forEach(z => {
+      html += `<div class="an-zone-item bull">
+        <span class="an-zone-type bull">DEMAND</span>
+        <div class="an-zone-range">
+          <span class="an-zone-high">H: ${_fmtPrice(z.top, _anSymbol)}</span>
+          <span class="an-zone-low">L: ${_fmtPrice(z.bottom, _anSymbol)}</span>
+        </div>
+        <span class="an-badge fresh">FRESH</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (!html) html = '<div class="an-empty">Tidak ada FVG atau SD zone terdeteksi</div>';
+  if (el) el.innerHTML = html;
+}
+
+/* ═══ CANDLE PATTERNS ═══ */
+function anRenderCandlePatterns(all) {
+  const el = _el('cp-body');
+  const badge = _el('cp-count-badge');
+  if (!all || !all.patterns || !all.patterns.length) {
+    if (badge) badge.textContent = '0 pattern';
+    if (el) el.innerHTML = '<div class="an-empty">Tidak ada pola candlestick terdeteksi pada candle terbaru</div>';
+    return;
+  }
+  const pts = all.patterns;
+  if (badge) badge.textContent = `${pts.length} pattern`;
+  const html = pts.map(p => {
+    const cls = p.type === 'bullish' ? 'bull' : p.type === 'bearish' ? 'bear' : 'neut';
+    return `<div class="cp-item">
+      <span class="an-badge ${cls}">${p.type === 'bullish' ? '▲' : p.type === 'bearish' ? '▼' : '◈'}</span>
+      <span class="cp-name">${p.name}</span>
+      <span class="cp-acc">Acc: ${p.accuracy}%</span>
+      <span class="an-row-val blue" style="font-size:0.65rem">${_fmtPrice(p.price, _anSymbol)}</span>
+    </div>`;
+  }).join('');
+  if (el) el.innerHTML = `<div style="padding:0 0">${html}</div>`;
+}
+
+/* ═══ ELLIOTT WAVE ═══ */
+function anRenderElliott(all) {
+  const el = _el('ew-body');
+  const badge = _el('ew-badge');
+  if (!all || !all.elliott) {
+    if (el) el.innerHTML = '<div class="an-empty">Data tidak tersedia</div>';
+    return;
+  }
+  const ew = all.elliott;
+  if (badge) {
+    if (ew.isValid) {
+      badge.className = `an-card-badge ${ew.direction === 'bullish' ? 'bullish' : 'bearish'}`;
+      badge.textContent = `Wave ${ew.currentWave} ${ew.direction === 'bullish' ? '↑' : '↓'}`;
+    } else {
+      badge.className = 'an-card-badge neutral';
+      badge.textContent = 'BELUM KONFIRMASI';
+    }
+  }
+  let html = '';
+  if (!ew.isValid) {
+    html += `<div class="an-nodata-notice" style="margin-bottom:8px">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="var(--accent-gold)" stroke-width="1.2"/><line x1="7" y1="4" x2="7" y2="7.5" stroke="var(--accent-gold)" stroke-width="1.2" stroke-linecap="round"/><circle cx="7" cy="9.5" r="0.7" fill="var(--accent-gold)"/></svg>
+      ${ew.note || 'Pola 5-wave impulsive belum terkonfirmasi.'}
+    </div>`;
+    if (ew.structure) {
+      html += anRow('Struktur saat ini', `<span class="an-badge ${ew.structure.trend==='uptrend'?'bull':ew.structure.trend==='downtrend'?'bear':'neut'}">${ew.structure.trend.toUpperCase()}</span>`);
+    }
+    html += `<div style="font-size:0.68rem;color:var(--text-muted);margin-top:8px">Gunakan bersama SMC dan indikator lain untuk konfirmasi.</div>`;
+  } else {
+    html += anRow('Arah Wave', `<span class="an-badge ${ew.direction==='bullish'?'bull':'bear'}">${ew.direction.toUpperCase()}</span>`);
+    html += anRow('Wave saat ini', `<span class="an-row-val gold">Wave ${ew.currentWave}</span>`);
+    if (ew.waveLengths) {
+      const wl = ew.waveLengths;
+      html += `<div class="divider"></div>`;
+      html += `<div style="font-size:0.66rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Panjang Wave</div>`;
+      ['wave1','wave2','wave3','wave4','wave5'].forEach((w,i) => {
+        const isLongest = wl.wave3 === Math.max(wl.wave1, wl.wave3, wl.wave5);
+        const cls = (w === 'wave3' && isLongest) ? 'gold' : '';
+        html += anRow(`W${i+1}`, `<span class="an-row-val ${cls}">${_fmtPrice(wl[w], _anSymbol)}${w==='wave3'&&isLongest?' ⭐':''}</span>`);
+      });
+    }
+    if (ew.projection) {
+      html += `<div class="divider"></div>`;
+      html += `<div style="font-size:0.66rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Proyeksi ${ew.projection.type}</div>`;
+      html += anRow('Target 1', `<span class="an-row-val green">${_fmtPrice(ew.projection.target1, _anSymbol)}</span>`);
+      html += anRow('Target 2', `<span class="an-row-val green">${_fmtPrice(ew.projection.target2, _anSymbol)}</span>`);
+      html += anRow('Target 3', `<span class="an-row-val green">${_fmtPrice(ew.projection.target3, _anSymbol)}</span>`);
+    }
+  }
+  if (el) el.innerHTML = html;
+}
+
+/* ═══ WYCKOFF ═══ */
+function anRenderWyckoff(all) {
+  const el = _el('wyckoff-body');
+  const badge = _el('wyckoff-badge');
+  if (!all || !all.wyckoff) {
+    if (el) el.innerHTML = '<div class="an-empty">Data tidak tersedia</div>';
+    return;
+  }
+  const w = all.wyckoff;
+  const phaseMap = { accumulation:'bullish', markup:'bullish', distribution:'bearish', markdown:'bearish' };
+  const phaseCls = phaseMap[w.phase] || 'neutral';
+
+  if (badge) {
+    badge.className = `an-card-badge ${phaseCls}`;
+    badge.textContent = (w.phase || '—').toUpperCase();
+  }
+
+  const phaseNames = ['ACCUMULATION','MARKUP','DISTRIBUTION','MARKDOWN'];
+  const phaseClsMap = {
+    accumulation: 'active-acc', markup: 'active-mark',
+    distribution: 'active-dist', markdown: 'active-mdown'
+  };
+  const phaseBar = `<div class="wyckoff-phases">${
+    phaseNames.map(p => {
+      const key = p.toLowerCase();
+      const isActive = w.phase && w.phase.toLowerCase() === key;
+      return `<div class="wyckoff-phase-btn${isActive?' '+phaseClsMap[key]:''}">${p.slice(0,4)}</div>`;
+    }).join('')
+  }</div>`;
+
+  let html = phaseBar;
+  html += anRow('Phase', `<span class="an-badge ${phaseCls==='bullish'?'bull':phaseCls==='bearish'?'bear':'neut'}">${(w.phase||'unknown').toUpperCase()} – ${w.subPhase||'?'}</span>`);
+  const wConfColor = phaseCls==='bullish' ? 'var(--accent-green)' : phaseCls==='bearish' ? 'var(--accent-red)' : 'var(--accent-blue)';
+  html += anRow('Confidence', `<div class="conf-progress" style="width:120px">
+    <div class="conf-progress-track"><div class="conf-progress-fill" style="width:${w.confidence||0}%;background:${wConfColor}"></div></div>
+    <span style="font-size:0.65rem;font-family:var(--font-mono);color:var(--text-muted)">${w.confidence||0}%</span>
+  </div>`);
+  html += anRow('Vol Trend', `<span class="an-badge ${w.volTrend==='increasing'?'bull':w.volTrend==='decreasing'?'bear':'neut'}">${(w.volTrend||'flat').toUpperCase()}</span>`);
+  if (w.events && w.events.length) {
+    html += `<div class="divider"></div>`;
+    html += `<div style="font-size:0.66rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Events Terdeteksi</div>`;
+    w.events.forEach(evt => {
+      html += `<div style="font-size:0.7rem;color:var(--text-secondary);padding:3px 0;border-bottom:1px solid rgba(48,54,61,0.4)">· ${evt}</div>`;
+    });
+  }
+  if (w.recommendation) {
+    html += `<div class="divider"></div>`;
+    html += `<div style="font-size:0.7rem;color:var(--accent-gold);background:var(--accent-gold-dim);border:1px solid rgba(255,215,0,0.2);border-radius:var(--radius-sm);padding:8px 10px;line-height:1.4">${w.recommendation}</div>`;
+  }
+  if (el) el.innerHTML = html;
+}
+
+/* ═══ HARMONIC ═══ */
+function anRenderHarmonic(all) {
+  const el = _el('harm-body');
+  const badge = _el('harm-count-badge');
+  if (!all || !all.harmonic || !all.harmonic.length) {
+    if (badge) badge.textContent = '0 pattern';
+    if (el) el.innerHTML = '<div class="an-empty">Tidak ada pola Harmonic terdeteksi</div>';
+    return;
+  }
+  const patterns = all.harmonic;
+  if (badge) badge.textContent = `${patterns.length} pattern`;
+  const html = patterns.map(p => {
+    const dirCls = p.direction === 'bullish' ? 'bull' : 'bear';
+    const activeCls = p.isActive ? `background:${p.direction==='bullish'?'var(--accent-green-dim)':'var(--accent-red-dim)'};border-color:${p.direction==='bullish'?'rgba(0,208,132,0.3)':'rgba(255,71,87,0.3)'};` : '';
+    return `<div class="harmonic-pattern-item" style="${activeCls}">
+      <div class="hp-row">
+        <span class="hp-name">${p.name}
+          <span class="an-badge ${dirCls}" style="margin-left:6px">${p.direction === 'bullish' ? '▲ BULL' : '▼ BEAR'}</span>
+          ${p.isActive ? '<span class="an-badge gold" style="margin-left:4px">PRZ AKTIF</span>' : ''}
+        </span>
+        <span class="an-badge neut">${p.confidence}%</span>
+      </div>
+      <div class="hp-row">
+        <span style="font-size:0.65rem;color:var(--text-muted)">PRZ: ${_fmtPrice(p.PRZ.bottom,_anSymbol)} – ${_fmtPrice(p.PRZ.top,_anSymbol)}</span>
+      </div>
+      <div class="hp-ratios">
+        ${(p.checks||[]).map(c => `<span class="hp-ratio" style="color:${c.ok?'var(--accent-green)':'var(--text-muted)'}">${c.key}: ${c.ratio}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  if (el) el.innerHTML = html;
+}
+
+/* ═══ MARKET STRUCTURE ═══ */
+function anRenderMarketStructure(all) {
+  const el = _el('ms-body');
+  const badge = _el('ms-badge');
+  if (!all || !all.structure) {
+    if (el) el.innerHTML = '<div class="an-empty">Data tidak tersedia</div>';
+    return;
+  }
+  const ms = all.structure;
+  const bos = (all.bos || []).slice(-4);
+  const choch = (all.choch || []).slice(-2);
+  const bb = (all.breakerBlocks || []);
+
+  if (badge) {
+    badge.className = `an-card-badge ${ms.trend==='uptrend'?'bullish':ms.trend==='downtrend'?'bearish':'neutral'}`;
+    badge.textContent = ms.trend.toUpperCase();
+  }
+
+  let html = '';
+  if (bos.length) {
+    html += `<div style="font-size:0.66rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">BOS / Breaks of Structure</div>`;
+    html += `<div class="an-zone-list">${
+      bos.reverse().map(b => {
+        const cls = b.type === 'bullish' ? 'bull' : 'bear';
+        return `<div class="an-zone-item ${cls}">
+          <span class="an-zone-type ${cls}">${b.label || b.type.toUpperCase()}</span>
+          <div class="an-zone-range">
+            <span class="an-zone-high" style="color:var(--text-primary)">${_fmtPrice(b.price, _anSymbol)}</span>
+          </div>
+          <span class="an-badge ${cls}">${b.type === 'bullish' ? '▲ BOS' : '▼ BOS'}</span>
+        </div>`;
+      }).join('')
+    }</div>`;
+  }
+  if (choch.length) {
+    html += `<div class="divider"></div>`;
+    html += `<div style="font-size:0.66rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">CHoCH</div>`;
+    html += choch.map(c => {
+      const cls = c.type === 'bullish' ? 'bull' : 'bear';
+      return `<div style="font-size:0.7rem;padding:4px 0;border-bottom:1px solid rgba(48,54,61,0.4);display:flex;justify-content:space-between">
+        <span class="an-badge ${cls}">${c.label || 'CHoCH'}</span>
+        <span style="font-family:var(--font-mono);color:var(--text-secondary)">${_fmtPrice(c.price, _anSymbol)}</span>
+      </div>`;
+    }).join('');
+  }
+  if (!bos.length && !choch.length)
+    html = '<div class="an-empty">Tidak ada BOS/CHoCH terdeteksi</div>';
+
+  /* Swing Points terbaru */
+  const recentHighs = (ms.highs || []).slice(-3);
+  const recentLows  = (ms.lows  || []).slice(-3);
+  if (recentHighs.length || recentLows.length) {
+    html += `<div class="divider"></div>`;
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
+    if (recentHighs.length) {
+      html += `<div><div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px">SWING HIGHS</div>`;
+      recentHighs.reverse().forEach(h => {
+        html += `<div style="font-size:0.68rem;color:var(--accent-red);font-family:var(--font-mono);padding:2px 0">${_fmtPrice(h.price,_anSymbol)} <span style="color:var(--text-muted);font-family:var(--font-sans)">${h.type||''}</span></div>`;
+      });
+      html += `</div>`;
+    }
+    if (recentLows.length) {
+      html += `<div><div style="font-size:0.65rem;color:var(--text-muted);margin-bottom:4px">SWING LOWS</div>`;
+      recentLows.reverse().forEach(l => {
+        html += `<div style="font-size:0.68rem;color:var(--accent-green);font-family:var(--font-mono);padding:2px 0">${_fmtPrice(l.price,_anSymbol)} <span style="color:var(--text-muted);font-family:var(--font-sans)">${l.type||''}</span></div>`;
+      });
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+  if (el) el.innerHTML = html;
+}
+
+/* ═══ MULTI-TIMEFRAME ═══ */
+function anRenderMTF(mtf) {
+  const tbody = _el('mtf-tbody');
+  const alignBadge = _el('mtf-align-badge');
+  const biasBadge  = _el('mtf-bias-badge');
+  const rec        = _el('mtf-recommendation');
+
+  if (!mtf || !mtf.timeframes) {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="an-empty">Data MTF tidak tersedia</td></tr>`;
+    return;
+  }
+
+  if (alignBadge) alignBadge.textContent = `Alignment: ${mtf.alignmentScore}%`;
+  if (biasBadge) {
+    biasBadge.className = `an-badge ${mtf.overallBias==='bullish'?'bull':mtf.overallBias==='bearish'?'bear':'neut'}`;
+    biasBadge.textContent = `Bias: ${mtf.overallBias.toUpperCase()}`;
+  }
+  if (rec) rec.textContent = mtf.recommendation || '';
+
+  const rows = mtf.timeframes.map(tf => {
+    if (!tf.hasData) {
+      return `<tr>
+        <td><span class="mtf-tf-label">${tf.label}</span></td>
+        <td colspan="8"><span class="mtf-no-data">Belum dimuat — buka TF ini di Chart</span></td>
+      </tr>`;
+    }
+    const sig    = tf.signal || 'neutral';
+    const trend  = tf.trend || '—';
+    const trendCls = trend === 'uptrend' ? 'bull' : trend === 'downtrend' ? 'bear' : 'neut';
+    const sigCls   = sig === 'buy' ? 'bull' : sig === 'sell' ? 'bear' : 'neut';
+    const conf     = tf.confluence || 0;
+
+    const pd = tf.smc && tf.smc.premiumDiscount;
+    const pdStr = pd ? `<span class="an-badge ${pd.zone==='discount'?'bull':pd.zone==='premium'?'bear':'neut'}" style="font-size:0.6rem">${pd.zone.toUpperCase()}</span>` : '—';
+
+    const fibTrend = tf.fib ? `<span class="an-badge ${tf.fib.trend==='bullish'?'bull':'bear'}" style="font-size:0.6rem">${tf.fib.trend.slice(0,4).toUpperCase()}</span>` : '—';
+
+    const ind = tf.indicators;
+    const rsiVal  = ind && ind.rsi  ? `${ind.rsi.value || '—'} <span class="an-badge ${ind.rsi.signal === 'BUY' ? 'bull' : ind.rsi.signal === 'SELL' ? 'bear' : 'neut'}" style="font-size:0.58rem">${ind.rsi.signal}</span>` : '—';
+    const macdSig = ind && ind.macd ? `<span class="an-badge ${ind.macd.signal === 'BUY' ? 'bull' : ind.macd.signal === 'SELL' ? 'bear' : 'neut'}" style="font-size:0.58rem">${ind.macd.signal}</span>` : '—';
+
+    const confBar = `<div class="mtf-conf-bar">
+      <div class="mtf-conf-track"><div class="mtf-conf-fill ${sig}" style="width:${Math.min((conf/20)*100,100)}%"></div></div>
+      <span style="font-size:0.65rem;font-family:var(--font-mono)">${conf}/20</span>
+    </div>`;
+
+    return `<tr>
+      <td><span class="mtf-tf-label">${tf.label}</span></td>
+      <td><span class="an-badge ${trendCls}" style="font-size:0.62rem">${trend.replace('trend','').toUpperCase()}</span></td>
+      <td><span class="mtf-signal-dot ${sig}"></span><span class="an-badge ${sigCls}" style="font-size:0.62rem">${sig.toUpperCase()}</span></td>
+      <td>${confBar}</td>
+      <td>${pdStr}</td>
+      <td>${fibTrend}</td>
+      <td style="font-size:0.7rem">${rsiVal}</td>
+      <td>${macdSig}</td>
+      <td style="font-size:0.65rem;color:var(--text-muted)">${tf.strength ? tf.strength.toUpperCase() : '—'}</td>
+    </tr>`;
+  });
+  if (tbody) tbody.innerHTML = rows.join('');
+}
+
+/* ═══ INDICATOR SUMMARY ═══ */
+function anRenderIndicatorSummary(indsum) {
+  if (!indsum) return;
+
+  const overall = indsum.overall;
+  if (overall) {
+    const dirEl = _el('indsum-dir');
+    const scoEl = _el('indsum-score');
+    if (dirEl) {
+      const cls = overall.direction.toLowerCase().replace(' ','-');
+      dirEl.className = `indsum-dir ${cls}`;
+      dirEl.textContent = overall.direction;
+    }
+    if (scoEl) scoEl.textContent = `${overall.buyCount}B · ${overall.neutralCount}N · ${overall.sellCount}S`;
+  }
+
+  const cats = ['trend','momentum','volume','volatility'];
+  cats.forEach(cat => {
+    const data = indsum[cat];
+    if (!data) return;
+    const tabEl = _el(`ind-tab-${cat}`);
+    if (!tabEl) return;
+    if (!data.signals || !data.signals.length) {
+      tabEl.innerHTML = '<div class="an-empty">Tidak ada sinyal</div>';
+      return;
+    }
+    const rows = data.signals.map(s => {
+      const sig = s.signal || 'NEUTRAL';
+      const valStr = typeof s.value === 'object'
+        ? Object.entries(s.value).map(([k,v]) => `${k}:${v}`).join(' ')
+        : (s.value !== null && s.value !== undefined ? String(s.value) : '');
+      return `<div class="indsum-row">
+        <div class="indsig-dot ${sig}"></div>
+        <span class="indsig-name">${s.name}</span>
+        <span class="indsig-val" title="${valStr}">${valStr.slice(0,20)}</span>
+        <span class="indsig-badge ${sig}">${sig}</span>
+      </div>
+      ${s.note ? `<div style="font-size:0.65rem;color:var(--text-muted);padding:0 18px 4px 44px">${s.note}</div>` : ''}`;
+    }).join('');
+    tabEl.innerHTML = rows;
+
+    /* Count badges for trend tab */
+    if (cat === 'trend') {
+      const b = _el('indsig-trend-buy');  if(b) b.textContent = data.count_buy  || 0;
+      const n = _el('indsig-trend-neu');  if(n) n.textContent = data.count_neutral||0;
+      const s = _el('indsig-trend-sell'); if(s) s.textContent = data.count_sell ||0;
+    }
+  });
+}
+
+/* ─── TAB SWITCH ─── */
+window.anSwitchIndTab = function(tab, btn) {
+  document.querySelectorAll('.indsum-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.indsum-tab-content').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const content = _el(`ind-tab-${tab}`);
+  if (content) content.classList.add('active');
+
+  const countBar = _el('indsig-count-bar-trend');
+  if (countBar && _anLastResult && _anLastResult.indsum) {
+    const data = _anLastResult.indsum[tab];
+    if (data) {
+      const b = _el('indsig-trend-buy');  if(b) b.textContent = data.count_buy     || 0;
+      const n = _el('indsig-trend-neu');  if(n) n.textContent = data.count_neutral  || 0;
+      const s = _el('indsig-trend-sell'); if(s) s.textContent = data.count_sell     || 0;
+    }
+  }
+};
+
+/* ─── HELPER: Render row ─── */
+function anRow(label, valueHtml) {
+  if (!label) return `<div style="padding:3px 0">${valueHtml}</div>`;
+  return `<div class="an-row">
+    <span class="an-row-label">${label}</span>
+    <span>${valueHtml}</span>
+  </div>`;
+}
+
+/* ─── EXPORT ANNOTATED CHART — fitur khusus Premium ─── */
+function anInitExportButton() {
+  const btn = _el('ts-export-btn');
+  const proPill = _el('ts-export-pro-pill');
+  if (!btn) return;
+
+  function isPremiumUser() {
+    const st = window.AppAuthState;
+    return !!(st && st.premium && st.premium.isPremium);
+  }
+
+  function syncProPill() {
+    if (proPill) proPill.style.display = isPremiumUser() ? 'none' : 'inline-flex';
+  }
+  syncProPill();
+  // Status premium bisa berubah (redeem kode di tab lain) — cek ulang tiap fokus halaman
+  window.addEventListener('focus', syncProPill);
+
+  btn.addEventListener('click', () => {
+    if (!isPremiumUser()) {
+      window.UI && window.UI.showToast('Unduh Gambar Analisis Chart khusus untuk akun Premium.', 'warning');
+      setTimeout(() => { window.location.href = 'premium.html'; }, 900);
+      return;
+    }
+    if (!_anLastResult || !_anLastResult.ohlcv || _anLastResult.ohlcv.length < 10) {
+      window.UI && window.UI.showToast('Jalankan Analisis dulu sebelum export.', 'warning');
+      return;
+    }
+    try {
+      const fname = window.ChartExport.exportPNG({
+        ohlcv: _anLastResult.ohlcv,
+        allAnalysis: _anLastResult.allAnalysis,
+        setup: _anLastResult.setup,
+        conf: _anLastResult.conf,
+        symbol: _anSymbol,
+        tf: _anTF,
+      });
+      window.UI && window.UI.showToast(`Chart berhasil di-export: ${fname}`, 'success');
+    } catch (err) {
+      window.UI && window.UI.showToast(err.message || 'Gagal export chart.', 'error');
+    }
+  });
+}
+
+/* ─── INIT ─── */
+function anInit() {
+  anBuildSymbolList();
+  anBuildTFList(_anSymbol);
+  anInitExportButton();
+  const tfSel = _el('an-tf-select');
+  if (tfSel) {
+    tfSel.value = _anTF;
+    if (!tfSel.value) { tfSel.value = 'H1'; _anTF = 'H1'; }
+  }
+  /* Auto run jika ada data */
+  setTimeout(() => {
+    const ohlcv = _getOHLCV(_anSymbol, _anTF);
+    if (ohlcv && ohlcv.length >= 30) anRunAnalysis();
+  }, 400);
+}
+
+anInit();
+
+})(); // end IIFE
+</script>
